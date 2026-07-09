@@ -5,6 +5,11 @@ import {
 } from 'lucide-react';
 import { Dashboard } from './components/modules/dashboard/Dashboard';
 import { StudentModule } from './components/modules/students/StudentModule';
+import { TeacherModule } from './components/modules/teachers/TeacherModule';
+import { FinanceModule } from './components/modules/finances/FinanceModule';
+import { InventoryModule } from './components/modules/inventory/InventoryModule';
+import { GrowthModule } from './components/modules/growth/GrowthModule';
+import { DocumentsModule } from './components/modules/documents/DocumentsModule';
 import { load, save } from './utils/storage';
 import { 
   Alumno, Profesor, Gasto, InventarioItem, 
@@ -110,6 +115,39 @@ export default function App() {
     showToast(`✓ Alumno eliminado`);
   };
 
+  const handleAddGasto = (gasto: Omit<Gasto, 'id'>) => {
+    const id = Math.max(...gastos.map(g => g.id), 0) + 1;
+    setGastos([...gastos, { ...gasto, id }]);
+    showToast(`✓ Gasto registrado`);
+  };
+
+  const handleDeleteGasto = (id: number) => {
+    setGastos(gastos.filter(g => g.id !== id));
+    showToast(`✓ Gasto eliminado`);
+  };
+
+  const handleAddProfessor = (prof: Omit<Profesor, 'id'>) => {
+    const id = Math.max(...profesores.map(p => p.id), 0) + 1;
+    setProfesores([...profesores, { ...prof, id }]);
+    showToast(`✓ Profesor ${prof.nombre} agregado`);
+  };
+
+  const handleDeleteProfessor = (id: number) => {
+    setProfesores(profesores.filter(p => p.id !== id));
+    showToast(`✓ Profesor eliminado`);
+  };
+
+  const handleAddInventoryItem = (item: Omit<InventarioItem, 'id'>) => {
+    const id = Math.max(...inventario.map(i => i.id), 0) + 1;
+    setInventario([...inventario, { ...item, id }]);
+    showToast(`✓ Ítem agregado al inventario`);
+  };
+
+  const handleDeleteInventoryItem = (id: number) => {
+    setInventario(inventario.filter(i => i.id !== id));
+    showToast(`✓ Ítem eliminado`);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Header */}
@@ -198,7 +236,40 @@ export default function App() {
           />
         )}
 
-        {!['dashboard', 'alumnos'].includes(tab) && (
+        {tab === 'finanzas' && (
+          <FinanceModule
+            gastos={gastos}
+            onAddGasto={handleAddGasto}
+            onDeleteGasto={handleDeleteGasto}
+          />
+        )}
+
+        {tab === 'profesores' && (
+          <TeacherModule
+            professors={profesores}
+            onAddProfessor={handleAddProfessor}
+            onEditProfessor={() => {}}
+            onDeleteProfessor={handleDeleteProfessor}
+          />
+        )}
+
+        {tab === 'inventario' && (
+          <InventoryModule
+            items={inventario}
+            onAddItem={handleAddInventoryItem}
+            onDeleteItem={handleDeleteInventoryItem}
+          />
+        )}
+
+        {tab === 'crecimiento' && (
+          <GrowthModule />
+        )}
+
+        {tab === 'documentos' && (
+          <DocumentsModule />
+        )}
+
+        {!['dashboard', 'alumnos', 'finanzas', 'profesores', 'inventario', 'crecimiento', 'documentos'].includes(tab) && (
           <div className="bg-card border border-border rounded-xl p-8 text-center">
             <div className="text-4xl mb-3">🚀</div>
             <h2 className="text-lg font-semibold mb-2">Módulo en desarrollo</h2>

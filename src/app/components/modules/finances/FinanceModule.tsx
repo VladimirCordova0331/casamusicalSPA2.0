@@ -1,8 +1,8 @@
 import React from 'react';
 import { Wallet, Plus, Trash2 } from 'lucide-react';
-import { Gasto } from '../../utils/types';
-import { FormInput } from '../ui/inputs/FormInput';
-import { FormSelect } from '../ui/inputs/FormSelect';
+import { Gasto } from '../../../utils/types';
+import { FormInput } from '../../ui/inputs/FormInput';
+import { FormSelect } from '../../ui/inputs/FormSelect';
 
 interface FinanceModuleProps {
   gastos: Gasto[];

@@ -8,7 +8,7 @@ import {
   TrendingUp, TrendingDown, AlertCircle, CheckCircle,
   Users, DollarSign, PieChart as PieChartIcon,
 } from 'lucide-react';
-import { DashboardMetrics, SmartAlert } from '../../utils/types';
+import { DashboardMetrics, SmartAlert } from '../../../utils/types';
 
 interface DashboardProps {
   metrics: DashboardMetrics;

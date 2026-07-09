@@ -1,8 +1,8 @@
 import React from 'react';
 import { Users, Plus, Pencil, Trash2 } from 'lucide-react';
-import { Alumno } from '../../utils/types';
-import { FormInput } from '../ui/inputs/FormInput';
-import { FormSelect } from '../ui/inputs/FormSelect';
+import { Alumno } from '../../../utils/types';
+import { FormInput } from '../../ui/inputs/FormInput';
+import { FormSelect } from '../../ui/inputs/FormSelect';
 
 interface StudentListProps {
   students: Alumno[];
