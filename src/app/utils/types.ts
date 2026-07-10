@@ -15,6 +15,7 @@ export interface Alumno {
   modalidad: string;
   grupoFamiliar: boolean;
   clases: Clase[];
+  pagado?: boolean;
 }
 
 export interface Profesor {
@@ -75,4 +76,21 @@ export interface SmartAlert {
   title: string;
   message: string;
   timestamp: number;
+}
+
+// Document type for Documents module
+export interface Documento {
+  id: number;
+  nombre: string;
+  tipo: 'contrato' | 'recibo' | 'factura' | 'reporte' | 'acuerdo' | 'otro';
+  fecha: string;
+  descripcion: string;
+}
+
+// Monthly growth snapshot for Growth module
+export interface GrowthSnapshot {
+  month: string;
+  alumnos: number;
+  ingresos: number;
+  gastos: number;
 }

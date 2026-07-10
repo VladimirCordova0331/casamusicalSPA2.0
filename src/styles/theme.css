@@ -1,83 +1,87 @@
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Casa Musical Academia — Light Mode (Crema + Dorado) ─── */
 :root {
   --font-size: 15px;
-  --background: #f5f4f0;
-  --foreground: #111110;
-  --card: #ffffff;
-  --card-foreground: #111110;
-  --popover: #ffffff;
-  --popover-foreground: #111110;
-  --primary: #111110;
-  --primary-foreground: #f5f4f0;
-  --secondary: #e8e6e0;
-  --secondary-foreground: #111110;
-  --muted: #eae8e3;
-  --muted-foreground: #7a7870;
-  --accent: #d4921f;
-  --accent-foreground: #ffffff;
-  --destructive: #c0392b;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: transparent;
-  --input-background: #eeece7;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: #d4921f;
-  --chart-1: #e8a03a;
-  --chart-2: #5b8c5a;
-  --chart-3: #4a7fa5;
-  --chart-4: #9b6b9b;
-  --chart-5: #c0572b;
-  --radius: 0.75rem;
-  --sidebar: #f0ede6;
-  --sidebar-foreground: #111110;
-  --sidebar-primary: #111110;
-  --sidebar-primary-foreground: #f5f4f0;
-  --sidebar-accent: #e8e6e0;
-  --sidebar-accent-foreground: #111110;
-  --sidebar-border: rgba(0,0,0,0.08);
-  --sidebar-ring: #d4921f;
+
+  --background:        #FAF6EE;   /* crema cálido de la plantilla */
+  --foreground:        #1C1008;   /* marrón oscuro profundo */
+  --card:              #FFFDF8;   /* blanco marfil */
+  --card-foreground:   #1C1008;
+  --popover:           #FFFDF8;
+  --popover-foreground:#1C1008;
+  --primary:           #1C1008;
+  --primary-foreground:#FAF6EE;
+  --secondary:         #F0E8D5;   /* arena cálida */
+  --secondary-foreground: #1C1008;
+  --muted:             #EDE4CF;   /* crema más oscura */
+  --muted-foreground:  #8B7355;   /* marrón medio */
+  --accent:            #C9A227;   /* dorado del logo */
+  --accent-foreground: #FFFDF8;
+  --destructive:       #B83232;
+  --destructive-foreground: #FFFDF8;
+  --border:            rgba(139, 100, 40, 0.14);  /* dorado muy sutil */
+  --input:             transparent;
+  --input-background:  #EDE4CF;
+  --switch-background: #C9A227;
+  --ring:              #C9A227;
+
+  --chart-1: #C9A227;   /* dorado */
+  --chart-2: #5B8C5A;   /* verde oliva */
+  --chart-3: #4A7FA5;   /* azul suave */
+  --chart-4: #9B6B4A;   /* terracota */
+  --chart-5: #A5604A;   /* coral */
+
+  --radius: 0.625rem;
+
+  --sidebar:            #F0E8D5;
+  --sidebar-foreground: #1C1008;
+  --sidebar-primary:    #1C1008;
+  --sidebar-primary-foreground: #FAF6EE;
+  --sidebar-accent:     #EDE4CF;
+  --sidebar-accent-foreground: #1C1008;
+  --sidebar-border:     rgba(139, 100, 40, 0.14);
+  --sidebar-ring:       #C9A227;
 }
 
+/* ─── Casa Musical Academia — Dark Mode (Marrón oscuro + Dorado) ─── */
 .dark {
-  --background: #0c0c0f;
-  --foreground: #f0ede8;
-  --card: #141418;
-  --card-foreground: #f0ede8;
-  --popover: #1a1a1f;
-  --popover-foreground: #f0ede8;
-  --primary: #f0ede8;
-  --primary-foreground: #0c0c0f;
-  --secondary: #1e1e25;
-  --secondary-foreground: #f0ede8;
-  --muted: #1a1a20;
-  --muted-foreground: #6b6a66;
-  --accent: #e8a03a;
-  --accent-foreground: #0c0c0f;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #fca5a5;
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.05);
-  --input-background: #1e1e25;
-  --switch-background: #3a3a42;
-  --ring: #e8a03a;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: #e8a03a;
-  --chart-2: #5b8c5a;
-  --chart-3: #4a7fa5;
-  --chart-4: #9b6b9b;
-  --chart-5: #c0572b;
-  --sidebar: #111115;
-  --sidebar-foreground: #f0ede8;
-  --sidebar-primary: #e8a03a;
-  --sidebar-primary-foreground: #0c0c0f;
-  --sidebar-accent: #1e1e25;
-  --sidebar-accent-foreground: #f0ede8;
-  --sidebar-border: rgba(255,255,255,0.07);
-  --sidebar-ring: #e8a03a;
+  --background:        #131008;   /* marrón-negro cálido */
+  --foreground:        #FAF6EE;   /* crema sobre oscuro */
+  --card:              #1C1709;   /* tarjeta oscura cálida */
+  --card-foreground:   #FAF6EE;
+  --popover:           #221D0C;
+  --popover-foreground:#FAF6EE;
+  --primary:           #FAF6EE;
+  --primary-foreground:#131008;
+  --secondary:         #2A2210;
+  --secondary-foreground: #FAF6EE;
+  --muted:             #221D0C;
+  --muted-foreground:  #9B8A65;   /* dorado apagado */
+  --accent:            #D4A843;   /* dorado más brillante en oscuro */
+  --accent-foreground: #131008;
+  --destructive:       #7F1D1D;
+  --destructive-foreground: #FCA5A5;
+  --border:            rgba(212, 168, 67, 0.10);  /* dorado muy sutil */
+  --input:             rgba(212, 168, 67, 0.06);
+  --input-background:  #2A2210;
+  --switch-background: #3D3018;
+  --ring:              #D4A843;
+
+  --chart-1: #D4A843;
+  --chart-2: #6BA86A;
+  --chart-3: #5A90B5;
+  --chart-4: #B07850;
+  --chart-5: #B5705A;
+
+  --sidebar:            #1C1709;
+  --sidebar-foreground: #FAF6EE;
+  --sidebar-primary:    #D4A843;
+  --sidebar-primary-foreground: #131008;
+  --sidebar-accent:     #2A2210;
+  --sidebar-accent-foreground: #FAF6EE;
+  --sidebar-border:     rgba(212, 168, 67, 0.10);
+  --sidebar-ring:       #D4A843;
 }
 
 @theme inline {
@@ -128,56 +132,18 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
+  html { font-size: var(--font-size); }
 
-  html {
-    font-size: var(--font-size);
-  }
+  h1 { font-size: var(--text-2xl); font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h2 { font-size: var(--text-xl);  font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h3 { font-size: var(--text-lg);  font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h4 { font-size: var(--text-base);font-weight: var(--font-weight-medium); line-height: 1.5; }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
-  }
+  label  { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
+  button { font-size: var(--text-base); font-weight: var(--font-weight-medium); line-height: 1.5; }
+  input  { font-size: var(--text-base); font-weight: var(--font-weight-normal);  line-height: 1.5; }
 }

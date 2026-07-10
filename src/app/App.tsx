@@ -178,52 +178,71 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-3 py-3 flex items-center justify-between">
+
+      {/* ── Header ─────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 border-b border-border bg-card/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+
+          {/* Marca */}
           <div className="flex items-center gap-3">
-            <img 
-              src="/assets/casa-musical-logo.png" 
-              alt="Casa Musical Academia" 
-              className="w-10 h-10 object-contain"
+            <img
+              src="/assets/casa-musical-logo.png"
+              alt="Casa Musical Academia"
+              className="w-9 h-9 object-contain drop-shadow-sm"
             />
-            <h1 className="font-bold hidden sm:inline text-lg">Casa Musical Academia</h1>
+            <div className="hidden sm:block leading-tight">
+              <h1
+                className="text-sm font-semibold text-foreground"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Casa Musical
+              </h1>
+              <p className="text-[9px] tracking-[0.18em] uppercase text-muted-foreground">
+                Academia
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Acciones */}
+          <div className="flex items-center gap-0.5">
+            {/* Toggle modo oscuro — estilo Copilot */}
             <button
               onClick={() => setDark(!dark)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
+              title={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
             >
-              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {dark
+                ? <Sun  className="w-[15px] h-[15px]" />
+                : <Moon className="w-[15px] h-[15px]" />}
             </button>
+
+            {/* Menú móvil */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="sm:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+              className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
             >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileMenuOpen
+                ? <X    className="w-[15px] h-[15px]" />
+                : <Menu className="w-[15px] h-[15px]" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Menú móvil desplegable */}
         {mobileMenuOpen && (
-          <nav className="border-t border-border px-3 py-2 bg-card/50 overflow-x-auto">
+          <nav className="border-t border-border px-4 py-2 bg-card/70 overflow-x-auto">
             <div className="flex gap-1">
               {TABS.map(({ id, label, Icon }) => (
                 <button
                   key={id}
-                  onClick={() => {
-                    setTab(id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium whitespace-nowrap rounded-lg transition-colors ${
+                  onClick={() => { setTab(id); setMobileMenuOpen(false); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-full transition-all ${
                     tab === id
-                      ? 'bg-accent/20 text-accent'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-accent text-accent-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3 h-3" />
                   {label}
                 </button>
               ))}
@@ -232,30 +251,31 @@ export default function App() {
         )}
       </header>
 
-      {/* Desktop Navigation */}
-      <nav className="hidden sm:flex border-b border-border bg-card px-3 sticky top-[57px] z-30 overflow-x-auto">
-        {TABS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium whitespace-nowrap border-b-2 transition-colors ${
-              tab === id
-                ? 'border-accent text-accent'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {label}
-          </button>
-        ))}
+      {/* ── Navegación desktop — tabs tipo píldora ────────── */}
+      <nav className="hidden sm:block border-b border-border bg-card/60 backdrop-blur-sm sticky top-[52px] z-30 overflow-x-auto">
+        <div className="flex gap-0.5 px-4 py-2 max-w-7xl mx-auto">
+          {TABS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-full transition-all ${
+                tab === id
+                  ? 'bg-accent text-accent-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`}
+            >
+              <Icon className="w-3 h-3" />
+              {label}
+            </button>
+          ))}
+        </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 py-4 pb-16">
+      {/* ── Contenido principal ──────────────────────────── */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-5 pb-16">
         {tab === 'dashboard' && (
           <Dashboard metrics={metrics} alerts={smartAlerts} monthlyData={monthlyData} />
         )}
-
         {tab === 'alumnos' && (
           <StudentModule
             students={alumnos}
@@ -266,7 +286,6 @@ export default function App() {
             requestConfirm={requestConfirm}
           />
         )}
-
         {tab === 'finanzas' && (
           <FinanceModule
             gastos={gastos}
@@ -276,7 +295,6 @@ export default function App() {
             requestConfirm={requestConfirm}
           />
         )}
-
         {tab === 'profesores' && (
           <TeacherModule
             professors={profesores}
@@ -286,59 +304,72 @@ export default function App() {
             requestConfirm={requestConfirm}
           />
         )}
-
         {tab === 'inventario' && (
           <InventoryModule
             items={inventario}
             onAddItem={handleAddInventoryItem}
+            onEditItem={(id, updates) => {
+              setInventario(inv => inv.map(i => i.id === id ? { ...i, ...updates } : i));
+              showToast('✓ Ítem actualizado');
+            }}
             onDeleteItem={handleDeleteInventoryItem}
+            requestConfirm={requestConfirm}
           />
         )}
-
-        {tab === 'crecimiento' && (
-          <GrowthModule />
-        )}
-
-        {tab === 'documentos' && (
-          <DocumentsModule />
-        )}
-
-        {!['dashboard', 'alumnos', 'finanzas', 'profesores', 'inventario', 'crecimiento', 'documentos'].includes(tab) && (
-          <div className="bg-card border border-border rounded-xl p-8 text-center">
-            <div className="text-4xl mb-3">🚀</div>
-            <h2 className="text-lg font-semibold mb-2">Módulo en desarrollo</h2>
-            <p className="text-muted-foreground text-sm">El módulo de {TABS.find(t => t.id === tab)?.label} está siendo optimizado.</p>
-          </div>
-        )}
+        {tab === 'crecimiento' && <GrowthModule />}
+        {tab === 'documentos'  && <DocumentsModule />}
       </main>
 
-      {/* Toaster (sonner) */}
+      {/* ── Toaster Sonner ───────────────────────────────── */}
       <Toaster position="bottom-center" />
 
-      {/* Confirm Modal */}
+      {/* ── Modal de confirmación ────────────────────────── */}
       {confirmState.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3">
-          <div className="bg-card border border-border rounded-lg p-4 w-full max-w-md">
-            <p className="text-sm font-semibold mb-2">Confirmación</p>
-            <p className="text-sm text-muted-foreground mb-4">{confirmState.message}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div
+            className="bg-card border border-border rounded-xl p-5 w-full max-w-sm shadow-xl"
+            style={{ boxShadow: '0 8px 32px rgba(28,16,8,0.18)' }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-base">⚠️</span>
+              <p
+                className="text-sm font-semibold text-foreground"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Confirmar acción
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+              {confirmState.message}
+            </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => { confirmState.resolver?.(false); setConfirmState({ open: false, message: '' }); }}
-                className="px-3 py-2 bg-muted rounded-md"
-              >Cancelar</button>
+                className="px-4 py-2 text-sm rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all"
+              >
+                Cancelar
+              </button>
               <button
                 onClick={() => { confirmState.resolver?.(true); setConfirmState({ open: false, message: '' }); }}
-                className="px-3 py-2 bg-red-500 text-white rounded-md"
-              >Eliminar</button>
+                className="px-4 py-2 text-sm rounded-full bg-red-500/90 hover:bg-red-500 text-white transition-all shadow-sm"
+              >
+                Eliminar
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card/50 backdrop-blur-sm px-3 py-2 text-center text-xs text-muted-foreground">
-        Casa Musical Academia SPA • Gestión inteligente para tu éxito
+      {/* ── Footer ───────────────────────────────────────── */}
+      <footer className="border-t border-border bg-card/50 backdrop-blur-sm px-4 py-3 text-center">
+        <p className="text-[10px] tracking-widest uppercase text-muted-foreground">
+          Casa Musical Academia SPA
+        </p>
+        <p className="text-[9px] text-muted-foreground/60 mt-0.5">
+          Espacio para crecer con la música 🎵
+        </p>
       </footer>
+
     </div>
   );
 }

@@ -117,47 +117,103 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
       return;
     }
 
-    const title = 'Reporte de Gastos - ' + new Date().toLocaleDateString();
-    const styles = `
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { font-size: 18px; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
-        th { background: #f3f4f6; }
-      </style>
-    `;
+    const fecha = new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
+    const total = filteredGastos.reduce((s, g) => s + g.monto, 0);
 
-    const rows = filteredGastos.map(g => `
+    const rows = filteredGastos.map((g, i) => `
       <tr>
+        <td class="num">${i + 1}</td>
         <td>${escapeHtml(g.concepto)}</td>
         <td>${escapeHtml(g.categoria)}</td>
-        <td style="text-align:right">${g.monto.toLocaleString('es-CL')}</td>
-        <td>${g.fecha}</td>
-        <td style="text-align:center">${g.automatico ? 'Sí' : 'No'}</td>
+        <td class="amount">$${g.monto.toLocaleString('es-CL')}</td>
+        <td class="center">${g.fecha}</td>
+        <td class="center">${g.automatico ? '✓' : '—'}</td>
       </tr>
     `).join('');
 
-    const html = `<!doctype html><html><head><meta charset="utf-8">${styles}</head><body>
-      <h1>${title}</h1>
-      <table>
-        <thead>
-          <tr><th>Concepto</th><th>Categoría</th><th>Monto</th><th>Fecha</th><th>Automático</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </body></html>`;
+    const html = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reporte de Gastos — Casa Musical Academia</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',Arial,sans-serif;background:#FAF6EE;color:#1C1008;padding:36px 40px;max-width:760px;margin:0 auto;font-size:13px}
+    /* ── Encabezado ── */
+    .header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:2px solid #C9A227;margin-bottom:22px}
+    .brand-name{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#1C1008;line-height:1.1}
+    .brand-sub{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#8B7355;margin-top:3px}
+    .doc-meta{text-align:right}
+    .doc-title{font-size:13px;font-weight:600;color:#1C1008}
+    .doc-date{font-size:11px;color:#8B7355;margin-top:3px}
+    /* ── Tabla ── */
+    table{width:100%;border-collapse:collapse;margin-top:4px}
+    thead tr{background:#EDE4CF}
+    th{padding:9px 11px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#8B7355;text-align:left;border-bottom:1px solid rgba(201,162,39,.25)}
+    td{padding:8px 11px;border-bottom:1px solid rgba(139,100,40,.08);vertical-align:middle}
+    tr:nth-child(even) td{background:rgba(237,228,207,.35)}
+    tr:last-child td{border-bottom:none}
+    /* ── Fila total ── */
+    .total-row td{background:#EDE4CF;font-weight:600;border-top:1px solid rgba(201,162,39,.35);font-size:12px}
+    /* ── Helpers ── */
+    .num{color:#8B7355;font-size:11px;width:28px}
+    .amount{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+    .center{text-align:center;color:#8B7355}
+    /* ── Footer ── */
+    .footer{margin-top:24px;padding-top:11px;border-top:1px solid rgba(139,100,40,.13);display:flex;justify-content:space-between;align-items:center}
+    .footer-brand{font-size:10px;color:#8B7355}
+    .footer-note{font-size:9px;color:#8B7355;opacity:.7}
+    @media print{body{padding:24px 28px}@page{margin:.8cm 1cm}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="brand-name">🎵 Casa Musical</div>
+      <div class="brand-sub">Academia SPA</div>
+    </div>
+    <div class="doc-meta">
+      <div class="doc-title">Reporte de Gastos</div>
+      <div class="doc-date">${fecha}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Concepto</th>
+        <th>Categoría</th>
+        <th style="text-align:right">Monto</th>
+        <th style="text-align:center">Fecha</th>
+        <th style="text-align:center">Auto.</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+      <tr class="total-row">
+        <td colspan="3">Total</td>
+        <td class="amount">$${total.toLocaleString('es-CL')}</td>
+        <td colspan="2" class="center">${filteredGastos.length} registros</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span class="footer-brand">Casa Musical Academia SPA</span>
+    <span class="footer-note">Documento generado automáticamente • Solo uso interno</span>
+  </div>
+
+  <script>window.onload=()=>{setTimeout(()=>{window.print()},400)}<\/script>
+</body>
+</html>`;
 
     const win = window.open('', '_blank');
-    if (!win) {
-      alert('No se puede abrir ventana para imprimir. Revisa tu bloqueador de pop-ups.');
-      return;
-    }
+    if (!win) { alert('Activa las ventanas emergentes para imprimir.'); return; }
     win.document.open();
     win.document.write(html);
     win.document.close();
-    // Esperar que el contenido cargue
-    setTimeout(() => { win.print(); }, 500);
   }, [filteredGastos]);
 
   // helper to escape HTML
