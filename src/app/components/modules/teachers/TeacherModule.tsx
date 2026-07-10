@@ -1,6 +1,5 @@
 import React from 'react';
 import { GraduationCap, Plus, Pencil, Trash2 } from 'lucide-react';
-import { SearchBar } from '../../ui/common/SearchBar';
 import { Profesor } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
 import { FormSelect } from '../../ui/inputs/FormSelect';
@@ -19,6 +18,9 @@ const INITIAL_PROFESSOR = {
   valorHora: 15000,
 };
 
+const SPECIALTY_PRESETS = ['Piano', 'Guitarra', 'Canto', 'Violín', 'Batería', 'Ukelele'];
+const RATE_PRESETS = [12000, 15000, 18000, 22000];
+
 export function TeacherModule({
   professors,
   onAddProfessor,
@@ -29,7 +31,6 @@ export function TeacherModule({
   try {
   const [newProf, setNewProf] = React.useState(INITIAL_PROFESSOR);
   const [editingId, setEditingId] = React.useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
   const [filterEspecialidad, setFilterEspecialidad] = React.useState('');
 
   const especialidades = Array.from(new Set(professors.map(p => p.especialidad))).filter(Boolean);
@@ -37,11 +38,10 @@ export function TeacherModule({
   // filtered
   const filteredProfessors = React.useMemo(() => {
     return professors.filter(prof => {
-      const matchesSearch = prof.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || prof.especialidad.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesEspecialidad = !filterEspecialidad || prof.especialidad === filterEspecialidad;
-      return matchesSearch && matchesEspecialidad;
+      return matchesEspecialidad;
     });
-  }, [professors, searchQuery, filterEspecialidad]);
+  }, [professors, filterEspecialidad]);
 
   const handleAdd = React.useCallback(async () => {
     const nombre = (newProf.nombre || '').trim();
@@ -116,6 +116,22 @@ export function TeacherModule({
             onChange={(e) => setNewProf({ ...newProf, especialidad: e.target.value })}
             label="Especialidad"
           />
+          <div className="flex flex-wrap gap-1">
+            {SPECIALTY_PRESETS.map(spec => (
+              <button
+                key={spec}
+                type="button"
+                onClick={() => setNewProf(prev => ({ ...prev, especialidad: spec }))}
+                className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                  newProf.especialidad === spec
+                    ? 'bg-accent text-accent-foreground border-accent'
+                    : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {spec}
+              </button>
+            ))}
+          </div>
           <FormInput
             type="number"
             placeholder="Valor por hora en CLP"
@@ -123,6 +139,22 @@ export function TeacherModule({
             onChange={(e) => setNewProf({ ...newProf, valorHora: Number(e.target.value) })}
             label="Valor Hora"
           />
+          <div className="flex flex-wrap gap-1">
+            {RATE_PRESETS.map(rate => (
+              <button
+                key={rate}
+                type="button"
+                onClick={() => setNewProf(prev => ({ ...prev, valorHora: rate }))}
+                className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                  Number(newProf.valorHora) === rate
+                    ? 'bg-accent text-accent-foreground border-accent'
+                    : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                ${rate.toLocaleString('es-CL')}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={handleAdd}
@@ -141,8 +173,7 @@ export function TeacherModule({
             <span className="text-xs text-muted-foreground ml-2">({filteredProfessors.length})</span>
           </div>
 
-          <div className="flex gap-2 items-center w-1/2">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Buscar por nombre o especialidad" />
+          <div className="flex gap-2 items-center w-full sm:w-auto">
             <FormSelect
               label="Especialidad"
               value={filterEspecialidad}
@@ -154,7 +185,7 @@ export function TeacherModule({
 
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {filteredProfessors.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">No hay profesores que coincidan</p>
+            <p className="text-xs text-muted-foreground text-center py-4">No hay profesores para la especialidad seleccionada</p>
           ) : (
             filteredProfessors.map(prof => (
               <div key={prof.id} className="bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">

@@ -31,3 +31,33 @@ button, a, input, select, textarea {
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+
+@keyframes fadeInUpSoft {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPop {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in-up-soft {
+  animation: fadeInUpSoft 220ms ease-out;
+}
+
+.soft-pop {
+  animation: softPop 180ms ease-out;
+}

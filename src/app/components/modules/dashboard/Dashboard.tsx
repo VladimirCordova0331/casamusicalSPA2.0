@@ -9,11 +9,29 @@ import {
   Users, DollarSign, PieChart as PieChartIcon,
 } from 'lucide-react';
 import { DashboardMetrics, SmartAlert } from '../../../utils/types';
+import { BUSINESS_CONFIG } from '../../../config/business';
 
 interface DashboardProps {
   metrics: DashboardMetrics;
   alerts: SmartAlert[];
   monthlyData: Array<{ month: string; ingresos: number; gastos: number }>;
+  agendaFinance: {
+    monthLabel: string;
+    weeksInCalendar: number;
+    extraWeeks: number;
+    totalExtraPotential: number;
+    coveredStudents: number;
+    rows: Array<{
+      id: number;
+      nombre: string;
+      aporte: number;
+      valorClaseBase: number;
+      clasesMesActual: number;
+      clasesBase: number;
+      clasesExtraPotenciales: number;
+      costoPotencialExtra: number;
+    }>;
+  };
 }
 
 const MetricCard = ({ 
@@ -75,7 +93,7 @@ const AlertCard = ({ alert }: { alert: SmartAlert }) => {
   );
 };
 
-export function Dashboard({ metrics, alerts, monthlyData }: DashboardProps) {
+export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: DashboardProps) {
   const utilityPercentage = metrics.ingresosMensuales > 0
     ? ((metrics.utilidad / metrics.ingresosMensuales) * 100).toFixed(1)
     : '0';
@@ -128,6 +146,62 @@ export function Dashboard({ metrics, alerts, monthlyData }: DashboardProps) {
           </div>
         </div>
       )}
+
+      <div className="bg-card border border-border rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold">Agenda y Finanzas (base {BUSINESS_CONFIG.monthlyBaseClasses} clases)</h3>
+          <span className="text-xs text-muted-foreground capitalize">{agendaFinance.monthLabel}</span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+          <div className="bg-muted/40 rounded-lg p-2.5">
+            <p className="text-[11px] text-muted-foreground">Semanas del mes</p>
+            <p className="text-lg font-bold text-foreground">{agendaFinance.weeksInCalendar}</p>
+          </div>
+          <div className="bg-muted/40 rounded-lg p-2.5">
+            <p className="text-[11px] text-muted-foreground">Semanas extra</p>
+            <p className={`text-lg font-bold ${agendaFinance.extraWeeks > 0 ? 'text-orange-500' : 'text-green-500'}`}>
+              {agendaFinance.extraWeeks}
+            </p>
+          </div>
+          <div className="bg-muted/40 rounded-lg p-2.5">
+            <p className="text-[11px] text-muted-foreground">Alumnos con 4+ clases</p>
+            <p className="text-lg font-bold text-foreground">
+              {agendaFinance.coveredStudents}/{agendaFinance.rows.length}
+            </p>
+          </div>
+          <div className="bg-muted/40 rounded-lg p-2.5">
+            <p className="text-[11px] text-muted-foreground">Impacto potencial extra</p>
+            <p className="text-lg font-bold text-orange-500">
+              ${agendaFinance.totalExtraPotential.toLocaleString('es-CL')}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground mb-2">
+          Referencia financiera: cada alumno paga por 4 clases/mes. Si hay semana extra, este bloque muestra el costo potencial adicional.
+        </p>
+
+        <div className="space-y-1.5 max-h-44 overflow-y-auto">
+          {agendaFinance.rows.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No hay alumnos para calcular agenda financiera.</p>
+          ) : (
+            agendaFinance.rows.slice(0, 8).map(row => (
+              <div key={row.id} className="flex items-center justify-between bg-muted/40 rounded-lg px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{row.nombre}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {row.clasesMesActual}/{row.clasesBase} clases registradas • Clase base: ${row.valorClaseBase.toLocaleString('es-CL')}
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-orange-500 ml-2">
+                  +${row.costoPotencialExtra.toLocaleString('es-CL')}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

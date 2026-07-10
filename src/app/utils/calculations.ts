@@ -31,9 +31,7 @@ export function calculateOccupationRate(alumnos: Alumno[], maxCapacity: number =
 }
 
 export function calculateStudentsWithPendingPayment(alumnos: Alumno[]): number {
-  // This would typically check against a payment records table
-  // For now, returning placeholder
-  return 0;
+  return alumnos.filter(a => !a.pagado).length;
 }
 
 export function getDashboardMetrics(

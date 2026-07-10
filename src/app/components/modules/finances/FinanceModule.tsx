@@ -4,6 +4,7 @@ import { SearchBar } from '../../ui/common/SearchBar';
 import { Gasto } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
 import { FormSelect } from '../../ui/inputs/FormSelect';
+import { BUSINESS_CONFIG } from '../../../config/business';
 
 interface FinanceModuleProps {
   gastos: Gasto[];
@@ -24,6 +25,9 @@ const CATEGORIES = [
   { value: 'arriendo', label: 'Arriendo' },
   { value: 'otros', label: 'Otros' },
 ];
+
+const QUICK_CATEGORY_VALUES = ['sueldos', 'servicios', 'material', 'arriendo', 'otros'];
+const QUICK_AMOUNTS = [10000, 25000, 50000, 100000];
 
 const INITIAL_GASTO = {
   concepto: '',
@@ -170,7 +174,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
 <body>
   <div class="header">
     <div>
-      <div class="brand-name">🎵 Casa Musical</div>
+      <div class="brand-name">🎵 ${BUSINESS_CONFIG.brandName}</div>
       <div class="brand-sub">Academia SPA</div>
     </div>
     <div class="doc-meta">
@@ -201,8 +205,8 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
   </table>
 
   <div class="footer">
-    <span class="footer-brand">Casa Musical Academia SPA</span>
-    <span class="footer-note">Documento generado automáticamente • Solo uso interno</span>
+    <span class="footer-brand">${BUSINESS_CONFIG.legalName}</span>
+    <span class="footer-note">Solo uso interno</span>
   </div>
 
   <script>window.onload=()=>{setTimeout(()=>{window.print()},400)}<\/script>
@@ -260,6 +264,27 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
             onChange={(e) => setNewGasto({ ...newGasto, categoria: e.target.value })}
             options={CATEGORIES}
           />
+          <div className="flex flex-wrap gap-1">
+            {QUICK_CATEGORY_VALUES.map(value => {
+              const cat = CATEGORIES.find(c => c.value === value);
+              if (!cat) return null;
+              const active = newGasto.categoria === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setNewGasto(prev => ({ ...prev, categoria: value }))}
+                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                    active
+                      ? 'bg-accent text-accent-foreground border-accent'
+                      : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
           <FormInput
             type="number"
             placeholder="Monto en CLP"
@@ -267,12 +292,37 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
             onChange={(e) => setNewGasto({ ...newGasto, monto: Number(e.target.value) })}
             label="Monto"
           />
+          <div className="flex flex-wrap gap-1">
+            {QUICK_AMOUNTS.map(amount => (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => setNewGasto(prev => ({ ...prev, monto: amount }))}
+                className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                  Number(newGasto.monto) === amount
+                    ? 'bg-accent text-accent-foreground border-accent'
+                    : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                ${amount.toLocaleString('es-CL')}
+              </button>
+            ))}
+          </div>
           <FormInput
             type="date"
             value={newGasto.fecha}
             onChange={(e) => setNewGasto({ ...newGasto, fecha: e.target.value })}
             label="Fecha"
           />
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setNewGasto(prev => ({ ...prev, fecha: new Date().toISOString().split('T')[0] }))}
+              className="px-2.5 py-1 text-xs rounded-full border bg-muted/40 border-border text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Usar fecha de hoy
+            </button>
+          </div>
         </div>
           <div className="mt-4 flex items-center gap-2">
             <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Buscar concepto o categoría" />

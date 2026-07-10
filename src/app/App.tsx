@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  Sun, Moon, Music, Users, Wallet, BarChart3,
+  Sun, Moon, Search, Download, Upload, Users, Wallet, BarChart3,
   FileText, Package, Star, Menu, X, BookOpen,
 } from 'lucide-react';
 import { Dashboard } from './components/modules/dashboard/Dashboard';
@@ -13,11 +13,12 @@ import { DocumentsModule } from './components/modules/documents/DocumentsModule'
 import { load, save } from './utils/storage';
 import { 
   Alumno, Profesor, Gasto, InventarioItem, 
-  GrupoFamiliar, SmartAlert
+  GrupoFamiliar, SmartAlert, Documento, GrowthSnapshot
 } from './utils/types';
 import { getDashboardMetrics } from './utils/calculations';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
+import { BUSINESS_CONFIG } from './config/business';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard', Icon: BarChart3 },
@@ -37,12 +38,15 @@ export default function App() {
 
   const [tab, setTab] = useState<typeof TABS[number]['id']>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [quickSearch, setQuickSearch] = useState('');
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
 
   const [alumnos, setAlumnos] = useState<Alumno[]>(() => load('cm_alumnos', []));
   const [profesores, setProfesores] = useState<Profesor[]>(() => load('cm_profesores', []));
   const [grupos, setGrupos] = useState<GrupoFamiliar[]>(() => load('cm_grupos', []));
   const [gastos, setGastos] = useState<Gasto[]>(() => load('cm_gastos', []));
   const [inventario, setInventario] = useState<InventarioItem[]>(() => load('cm_inventario', []));
+  const [documentos, setDocumentos] = useState<Documento[]>(() => load('cm_documentos', []));
 
   const showToast = (msg: string) => { toast(msg); };
 
@@ -57,6 +61,7 @@ export default function App() {
   useEffect(() => { save('cm_grupos', grupos); }, [grupos]);
   useEffect(() => { save('cm_gastos', gastos); }, [gastos]);
   useEffect(() => { save('cm_inventario', inventario); }, [inventario]);
+  useEffect(() => { save('cm_documentos', documentos); }, [documentos]);
 
   const metrics = useMemo(() => 
     getDashboardMetrics(alumnos, profesores, gastos),
@@ -100,8 +105,49 @@ export default function App() {
       });
     }
 
+    if (metrics.flujoCaja < 0) {
+      alerts.push({
+        id: 'negative-cashflow',
+        type: 'alert',
+        title: 'Flujo de Caja Negativo',
+        message: `Tus gastos superan ingresos por $${Math.abs(metrics.flujoCaja).toLocaleString('es-CL')}`,
+        timestamp: Date.now(),
+      });
+    }
+
+    if (profesores.length === 0) {
+      alerts.push({
+        id: 'no-professors',
+        type: 'warning',
+        title: 'Faltan Profesores',
+        message: 'Aún no hay profesores registrados. Agrega al menos uno para asignar alumnos.',
+        timestamp: Date.now(),
+      });
+    }
+
+    const itemsEnMalEstado = inventario.filter(item => item.estado === 'malo').length;
+    if (itemsEnMalEstado > 0) {
+      alerts.push({
+        id: 'inventory-maintenance',
+        type: 'warning',
+        title: 'Mantención de Inventario',
+        message: `Hay ${itemsEnMalEstado} ítem(s) en mal estado que requieren revisión.`,
+        timestamp: Date.now(),
+      });
+    }
+
+    if (documentos.length === 0) {
+      alerts.push({
+        id: 'no-documents',
+        type: 'info',
+        title: 'Documentación Inicial',
+        message: 'Te recomendamos cargar contratos o acuerdos para mantener respaldo administrativo.',
+        timestamp: Date.now(),
+      });
+    }
+
     return alerts;
-  }, [gastos, metrics]);
+  }, [documentos, gastos, inventario, metrics, profesores.length]);
 
   const monthlyData = [
     { month: 'Ene', ingresos: 1200000, gastos: 800000 },
@@ -109,9 +155,132 @@ export default function App() {
     { month: 'Mar', ingresos: 1500000, gastos: 900000 },
   ];
 
+  const growthData = useMemo<GrowthSnapshot[]>(() => {
+    const monthFormatter = new Intl.DateTimeFormat('es-CL', { month: 'short' });
+    const now = new Date();
+    const ingresosMensualesEstimados = alumnos.reduce((sum, a) => sum + (Number(a.aporte) || 0), 0);
+
+    const monthKeys = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const label = monthFormatter.format(date).replace('.', '');
+      const month = label.charAt(0).toUpperCase() + label.slice(1, 3);
+      return { key, month };
+    });
+
+    const gastosPorMes = gastos.reduce<Record<string, number>>((acc, gasto) => {
+      if (!gasto.fecha) return acc;
+      const date = new Date(`${gasto.fecha}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return acc;
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      acc[key] = (acc[key] || 0) + (Number(gasto.monto) || 0);
+      return acc;
+    }, {});
+
+    return monthKeys.map(({ key, month }) => ({
+      month,
+      alumnos: alumnos.length,
+      ingresos: ingresosMensualesEstimados,
+      gastos: gastosPorMes[key] || 0,
+    }));
+  }, [alumnos, gastos]);
+
+  const agendaFinance = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const weeksInCalendar = Math.ceil((daysInMonth + firstWeekday) / 7);
+    const extraWeeks = Math.max(0, weeksInCalendar - 4);
+
+    const parseClassDate = (value: string) => {
+      const direct = new Date(value);
+      if (!Number.isNaN(direct.getTime())) return direct;
+      const parts = value.split('-');
+      if (parts.length === 3) {
+        const parsed = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+      }
+      return null;
+    };
+
+    const rows = alumnos.map(alumno => {
+      const aporte = Number(alumno.aporte) || 0;
+      const valorClaseBase = aporte / BUSINESS_CONFIG.monthlyBaseClasses;
+      const clasesMesActual = (alumno.clases || []).filter(clase => {
+        if (!clase?.fecha) return false;
+        const classDate = parseClassDate(clase.fecha);
+        return !!classDate && classDate.getFullYear() === year && classDate.getMonth() === month;
+      }).length;
+      const clasesExtraPotenciales = Math.max(0, extraWeeks);
+      const costoPotencialExtra = Math.round(valorClaseBase * clasesExtraPotenciales);
+
+      return {
+        id: alumno.id,
+        nombre: alumno.nombre,
+        aporte,
+        valorClaseBase: Math.round(valorClaseBase),
+        clasesMesActual,
+        clasesBase: BUSINESS_CONFIG.monthlyBaseClasses,
+        clasesExtraPotenciales,
+        costoPotencialExtra,
+      };
+    });
+
+    return {
+      monthLabel: new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' }).format(now),
+      weeksInCalendar,
+      extraWeeks,
+      totalExtraPotential: rows.reduce((sum, row) => sum + row.costoPotencialExtra, 0),
+      coveredStudents: rows.filter(row => row.clasesMesActual >= 4).length,
+      rows: rows.sort((a, b) => b.costoPotencialExtra - a.costoPotencialExtra),
+    };
+  }, [alumnos]);
+
+  const quickSearchResults = useMemo<Array<{ tab: typeof TABS[number]['id']; label: string; count: number }>>(() => {
+    const query = quickSearch.trim().toLowerCase();
+    if (!query) return [];
+
+    const includes = (value: string | number | undefined | null) =>
+      String(value || '').toLowerCase().includes(query);
+
+    const results: Array<{ tab: typeof TABS[number]['id']; label: string; count: number }> = [];
+    const addResult = (tabId: typeof TABS[number]['id'], label: string, count: number) => {
+      if (count > 0) results.push({ tab: tabId, label, count });
+    };
+
+    addResult('alumnos', 'Alumnos', alumnos.filter(a =>
+      includes(a.nombre) || includes(a.apoderado) || includes(a.instrumento) || includes(a.profesor)
+    ).length);
+
+    addResult('profesores', 'Profesores', profesores.filter(p =>
+      includes(p.nombre) || includes(p.especialidad)
+    ).length);
+
+    addResult('finanzas', 'Finanzas', gastos.filter(g =>
+      includes(g.concepto) || includes(g.categoria) || includes(g.fecha)
+    ).length);
+
+    addResult('inventario', 'Inventario', inventario.filter(i =>
+      includes(i.nombre) || includes(i.categoria) || includes(i.ubicacion)
+    ).length);
+
+    addResult('documentos', 'Documentos', documentos.filter(d =>
+      includes(d.nombre) || includes(d.descripcion) || includes(d.tipo)
+    ).length);
+
+    const tabByName = TABS.find(t => t.label.toLowerCase().includes(query));
+    if (tabByName && !results.some(r => r.tab === tabByName.id)) {
+      results.push({ tab: tabByName.id, label: tabByName.label, count: 1 });
+    }
+
+    return results.sort((a, b) => b.count - a.count).slice(0, 5);
+  }, [alumnos, documentos, gastos, inventario, profesores, quickSearch]);
+
   const handleAddAlumno = (newAlumno: Omit<Alumno, 'id' | 'clases'>) => {
     const id = Math.max(...alumnos.map(a => a.id), 0) + 1;
-    setAlumnos([...alumnos, { ...newAlumno, id, clases: [] }]);
+    setAlumnos([...alumnos, { ...newAlumno, id, clases: [], pagado: newAlumno.pagado ?? false }]);
     showToast(`✓ ${newAlumno.nombre} agregado`);
   };
 
@@ -176,6 +345,101 @@ export default function App() {
     showToast(`✓ Ítem eliminado`);
   };
 
+  const handleAddDocument = (doc: Omit<Documento, 'id'>) => {
+    const id = Math.max(...documentos.map(d => d.id), 0) + 1;
+    setDocumentos(prev => [...prev, { ...doc, id }]);
+    showToast('✓ Documento agregado');
+  };
+
+  const handleDeleteDocument = async (id: number) => {
+    const ok = await requestConfirm('¿Eliminar este documento? Esta acción no se puede deshacer.');
+    if (!ok) return;
+    setDocumentos(prev => prev.filter(d => d.id !== id));
+    showToast('✓ Documento eliminado');
+  };
+
+  const handleExportBackup = () => {
+    const totalRegistros = alumnos.length + profesores.length + gastos.length + inventario.length + documentos.length;
+    const payload = {
+      version: 1,
+      generatedAt: new Date().toISOString(),
+      alumnos,
+      profesores,
+      grupos,
+      gastos,
+      inventario,
+      documentos,
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 16);
+    link.href = url;
+    link.download = `casa-musical-respaldo-${stamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`✓ Respaldo descargado (${totalRegistros} registros)`);
+  };
+
+  const handleImportBackup = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const text = await file.text();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      alert('El archivo no es un respaldo válido (JSON incorrecto).');
+      event.target.value = '';
+      return;
+    }
+
+    if (!parsed || typeof parsed !== 'object') {
+      alert('Formato de respaldo inválido.');
+      event.target.value = '';
+      return;
+    }
+
+    const data = parsed as Record<string, unknown>;
+    const alumnosData = Array.isArray(data.alumnos) ? (data.alumnos as Alumno[]) : null;
+    const profesoresData = Array.isArray(data.profesores) ? (data.profesores as Profesor[]) : null;
+    const gruposData = Array.isArray(data.grupos) ? (data.grupos as GrupoFamiliar[]) : null;
+    const gastosData = Array.isArray(data.gastos) ? (data.gastos as Gasto[]) : null;
+    const inventarioData = Array.isArray(data.inventario) ? (data.inventario as InventarioItem[]) : null;
+    const documentosData = Array.isArray(data.documentos) ? (data.documentos as Documento[]) : null;
+
+    if (!alumnosData || !profesoresData || !gruposData || !gastosData || !inventarioData || !documentosData) {
+      alert('El respaldo no tiene la estructura esperada.');
+      event.target.value = '';
+      return;
+    }
+
+    const ok = await requestConfirm('Esto reemplazará todos los datos actuales por los del respaldo. ¿Deseas continuar?');
+    if (!ok) {
+      event.target.value = '';
+      return;
+    }
+
+    setAlumnos(alumnosData);
+    setProfesores(profesoresData);
+    setGrupos(gruposData);
+    setGastos(gastosData);
+    setInventario(inventarioData);
+    setDocumentos(documentosData);
+    const totalRestaurado =
+      alumnosData.length +
+      profesoresData.length +
+      gastosData.length +
+      inventarioData.length +
+      documentosData.length;
+    showToast(`✓ Respaldo restaurado (${totalRestaurado} registros)`);
+    event.target.value = '';
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
 
@@ -188,7 +452,7 @@ export default function App() {
             <img
               src="/assets/casa-musical-logo.png"
               alt="Casa Musical Academia"
-              className="w-9 h-9 object-contain drop-shadow-sm"
+              className="w-12 h-12 object-contain drop-shadow-sm"
             />
             <div className="hidden sm:block leading-tight">
               <h1
@@ -205,6 +469,48 @@ export default function App() {
 
           {/* Acciones */}
           <div className="flex items-center gap-0.5">
+            <div className="hidden md:block relative mr-1">
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2 top-1/2 -translate-y-1/2" />
+              <input
+                value={quickSearch}
+                onChange={(e) => setQuickSearch(e.target.value)}
+                placeholder="Buscar rápido..."
+                className="h-8 w-44 lg:w-56 rounded-full border border-border bg-background/80 pl-7 pr-3 text-xs text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+              {quickSearch.trim() && quickSearchResults.length > 0 && (
+                <div className="absolute right-0 mt-1 w-64 rounded-lg border border-border bg-card shadow-lg overflow-hidden z-50">
+                  {quickSearchResults.map(result => (
+                    <button
+                      key={result.tab}
+                      onClick={() => { setTab(result.tab); setQuickSearch(''); }}
+                      className="w-full px-3 py-2 text-left hover:bg-muted/60 transition-colors"
+                    >
+                      <p className="text-xs font-medium text-foreground">{result.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{result.count} coincidencia(s)</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleExportBackup}
+              title="Descargar respaldo completo (.json)"
+              className="h-8 px-2 md:px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+            >
+              <Download className="w-[15px] h-[15px]" />
+              <span className="hidden lg:inline text-[11px]">Respaldo</span>
+            </button>
+
+            <button
+              onClick={() => backupInputRef.current?.click()}
+              title="Restaurar respaldo (.json)"
+              className="h-8 px-2 md:px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+            >
+              <Upload className="w-[15px] h-[15px]" />
+              <span className="hidden lg:inline text-[11px]">Restaurar</span>
+            </button>
+
             {/* Toggle modo oscuro — estilo Copilot */}
             <button
               onClick={() => setDark(!dark)}
@@ -225,6 +531,13 @@ export default function App() {
                 ? <X    className="w-[15px] h-[15px]" />
                 : <Menu className="w-[15px] h-[15px]" />}
             </button>
+            <input
+              ref={backupInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={handleImportBackup}
+            />
           </div>
         </div>
 
@@ -272,9 +585,14 @@ export default function App() {
       </nav>
 
       {/* ── Contenido principal ──────────────────────────── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-5 pb-16">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-5 pb-16 fade-in-up-soft">
         {tab === 'dashboard' && (
-          <Dashboard metrics={metrics} alerts={smartAlerts} monthlyData={monthlyData} />
+          <Dashboard
+            metrics={metrics}
+            alerts={smartAlerts}
+            monthlyData={monthlyData}
+            agendaFinance={agendaFinance}
+          />
         )}
         {tab === 'alumnos' && (
           <StudentModule
@@ -316,8 +634,14 @@ export default function App() {
             requestConfirm={requestConfirm}
           />
         )}
-        {tab === 'crecimiento' && <GrowthModule />}
-        {tab === 'documentos'  && <DocumentsModule />}
+        {tab === 'crecimiento' && <GrowthModule data={growthData} capacidadMaxima={50} />}
+        {tab === 'documentos'  && (
+          <DocumentsModule
+            documents={documentos}
+            onAddDocument={handleAddDocument}
+            onDeleteDocument={handleDeleteDocument}
+          />
+        )}
       </main>
 
       {/* ── Toaster Sonner ───────────────────────────────── */}
@@ -327,7 +651,7 @@ export default function App() {
       {confirmState.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div
-            className="bg-card border border-border rounded-xl p-5 w-full max-w-sm shadow-xl"
+            className="bg-card border border-border rounded-xl p-5 w-full max-w-sm shadow-xl soft-pop"
             style={{ boxShadow: '0 8px 32px rgba(28,16,8,0.18)' }}
           >
             <div className="flex items-center gap-2 mb-3">

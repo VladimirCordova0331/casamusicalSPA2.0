@@ -4,33 +4,32 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts';
-
-interface GrowthData {
-  month: string;
-  alumnos: number;
-  ingresos: number;
-  ocupacion: number;
-}
+import { GrowthSnapshot } from '../../../utils/types';
 
 interface GrowthModuleProps {
-  data?: GrowthData[];
+  data?: GrowthSnapshot[];
+  capacidadMaxima?: number;
 }
 
-export function GrowthModule({ data = [] }: GrowthModuleProps) {
+export function GrowthModule({ data = [], capacidadMaxima = 50 }: GrowthModuleProps) {
   // Demo data para visualización
   const defaultData = [
-    { month: 'Ene', alumnos: 8, ingresos: 800000, ocupacion: 16 },
-    { month: 'Feb', alumnos: 12, ingresos: 1200000, ocupacion: 24 },
-    { month: 'Mar', alumnos: 18, ingresos: 1800000, ocupacion: 36 },
-    { month: 'Abr', alumnos: 22, ingresos: 2200000, ocupacion: 44 },
-    { month: 'May', alumnos: 28, ingresos: 2800000, ocupacion: 56 },
-    { month: 'Jun', alumnos: 32, ingresos: 3200000, ocupacion: 64 },
+    { month: 'Ene', alumnos: 8, ingresos: 800000, gastos: 320000 },
+    { month: 'Feb', alumnos: 12, ingresos: 1200000, gastos: 480000 },
+    { month: 'Mar', alumnos: 18, ingresos: 1800000, gastos: 680000 },
+    { month: 'Abr', alumnos: 22, ingresos: 2200000, gastos: 860000 },
+    { month: 'May', alumnos: 28, ingresos: 2800000, gastos: 970000 },
+    { month: 'Jun', alumnos: 32, ingresos: 3200000, gastos: 1200000 },
   ];
 
   const displayData = data.length > 0 ? data : defaultData;
+  const chartData = displayData.map(item => ({
+    ...item,
+    ocupacion: Math.min(100, capacidadMaxima > 0 ? (item.alumnos / capacidadMaxima) * 100 : 0),
+  }));
 
-  const latestMonth = displayData[displayData.length - 1];
-  const previousMonth = displayData[displayData.length - 2];
+  const latestMonth = chartData[chartData.length - 1];
+  const previousMonth = chartData[chartData.length - 2];
 
   const alumnosGrowth = previousMonth 
     ? ((latestMonth.alumnos - previousMonth.alumnos) / previousMonth.alumnos * 100).toFixed(1)
@@ -68,7 +67,7 @@ export function GrowthModule({ data = [] }: GrowthModuleProps) {
           <h3 className="text-sm font-semibold">Tendencia de Crecimiento</h3>
         </div>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={displayData}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis dataKey="month" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
@@ -86,7 +85,7 @@ export function GrowthModule({ data = [] }: GrowthModuleProps) {
             />
             <Line 
               type="monotone" 
-              dataKey="ocupacion" 
+              dataKey="ocupacion"
               stroke="#10b981" 
               name="Ocupación (%)"
               dot={{ fill: '#10b981', r: 4 }}

@@ -1,18 +1,12 @@
 import React from 'react';
 import { FileText, Plus, Download, Trash2 } from 'lucide-react';
 import { FormInput } from '../../ui/inputs/FormInput';
-
-interface Document {
-  id: number;
-  nombre: string;
-  tipo: string;
-  fecha: string;
-  descripcion: string;
-}
+import { FormSelect } from '../../ui/inputs/FormSelect';
+import { Documento } from '../../../utils/types';
 
 interface DocumentsModuleProps {
-  documents?: Document[];
-  onAddDocument?: (doc: Omit<Document, 'id'>) => void;
+  documents?: Documento[];
+  onAddDocument?: (doc: Omit<Documento, 'id'>) => void;
   onDeleteDocument?: (id: number) => void;
 }
 
@@ -25,8 +19,16 @@ const DOCUMENT_TYPES = [
   { value: 'otro', label: 'Otro' },
 ];
 
+const escapeHtml = (value: string) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
 // Demo documents
-const DEMO_DOCUMENTS: Document[] = [
+const DEMO_DOCUMENTS: Documento[] = [
   {
     id: 1,
     nombre: 'Contrato Profesor García',
@@ -57,7 +59,7 @@ export function DocumentsModule({
 }: DocumentsModuleProps) {
   const [newDoc, setNewDoc] = React.useState({
     nombre: '',
-    tipo: 'otro',
+    tipo: 'otro' as Documento['tipo'],
     fecha: new Date().toISOString().split('T')[0],
     descripcion: '',
   });
@@ -83,9 +85,171 @@ export function DocumentsModule({
     });
   }, [newDoc, onAddDocument]);
 
-  const handleDownload = (docName: string) => {
-    // Simular descarga
-    alert(`📥 Descargando: ${docName}`);
+  const handleDownload = (doc: Documento) => {
+    const tipoLabel = DOCUMENT_TYPES.find(t => t.value === doc.tipo)?.label || doc.tipo;
+    const fechaEmision = new Date().toLocaleDateString('es-CL', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const html = `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(doc.nombre)} | Casa Musical Academia</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #FAF6EE;
+      color: #1C1008;
+      padding: 38px 42px;
+      max-width: 840px;
+      margin: 0 auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .header {
+      border-bottom: 2px solid #C9A227;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 2px rgba(28, 16, 8, 0.12));
+    }
+    .brand-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px;
+      line-height: 1.1;
+      color: #1C1008;
+    }
+    .brand-sub {
+      font-size: 9px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #8B7355;
+      margin-top: 4px;
+    }
+    .doc-badge {
+      text-align: right;
+      font-size: 11px;
+      color: #8B7355;
+    }
+    .doc-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 21px;
+      color: #1C1008;
+      margin-bottom: 8px;
+    }
+    .card {
+      background: #FFFDF8;
+      border: 1px solid rgba(201, 162, 39, 0.28);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(28, 16, 8, 0.06);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(139, 115, 85, 0.14);
+    }
+    .row:last-child { border-bottom: none; }
+    .label {
+      color: #8B7355;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .value {
+      color: #1C1008;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .footer {
+      margin-top: 26px;
+      padding-top: 11px;
+      border-top: 1px solid rgba(139, 115, 85, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #8B7355;
+    }
+    @media print {
+      body { padding: 22px 26px; }
+      @page { margin: 0.9cm 1cm; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="brand-wrap">
+      <img class="brand-logo" src="/assets/casa-musical-logo.png" alt="Casa Musical Logo" />
+      <div>
+        <h1 class="brand-title">Casa Musical</h1>
+        <p class="brand-sub">Academia SPA</p>
+      </div>
+    </div>
+    <div class="doc-badge">
+      <p>Documento oficial</p>
+      <p>Emitido: ${escapeHtml(fechaEmision)}</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2 class="doc-name">${escapeHtml(doc.nombre || 'Documento sin nombre')}</h2>
+
+    <div class="row">
+      <p class="label">Tipo</p>
+      <p class="value">${escapeHtml(tipoLabel)}</p>
+    </div>
+    <div class="row">
+      <p class="label">Fecha</p>
+      <p class="value">${escapeHtml(doc.fecha || '-')}</p>
+    </div>
+    <div class="row">
+      <p class="label">Descripción</p>
+      <p class="value">${escapeHtml(doc.descripcion || 'Sin descripción')}</p>
+    </div>
+    <div class="row">
+      <p class="label">Código interno</p>
+      <p class="value">DOC-${doc.id}</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Casa Musical Academia SPA</span>
+  </footer>
+
+  <script>window.onload=()=>setTimeout(()=>window.print(),350)<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      alert('Activa las ventanas emergentes para generar el documento.');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
   };
 
   const getTypeColor = (type: string) => {
@@ -141,6 +305,12 @@ export function DocumentsModule({
             onChange={(e) => setNewDoc({ ...newDoc, descripcion: e.target.value })}
             label="Descripción"
           />
+          <FormSelect
+            label="Tipo"
+            value={newDoc.tipo}
+            onChange={(e) => setNewDoc({ ...newDoc, tipo: e.target.value as Documento['tipo'] })}
+            options={DOCUMENT_TYPES}
+          />
           <FormInput
             type="date"
             value={newDoc.fecha}
@@ -183,7 +353,7 @@ export function DocumentsModule({
                 </div>
                 <div className="flex gap-1 ml-2">
                   <button
-                    onClick={() => handleDownload(doc.nombre)}
+                    onClick={() => handleDownload(doc)}
                     className="p-1.5 hover:bg-green-500/20 text-green-500 rounded-md transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
