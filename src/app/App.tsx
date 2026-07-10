@@ -112,6 +112,7 @@ export default function App() {
   };
 
   const handleDeleteAlumno = (id: number) => {
+    if (!confirm('¿Estás seguro que deseas eliminar este alumno? Esta acción no se puede deshacer.')) return;
     setAlumnos(alumnos.filter(a => a.id !== id));
     showToast(`✓ Alumno eliminado`);
   };
@@ -133,6 +134,7 @@ export default function App() {
   };
 
   const handleDeleteGasto = (id: number) => {
+    if (!confirm('¿Estás seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.')) return;
     setGastos(gastos.filter(g => g.id !== id));
     showToast(`✓ Gasto eliminado`);
   };
@@ -149,6 +151,7 @@ export default function App() {
   };
 
   const handleDeleteProfessor = (id: number) => {
+    if (!confirm('¿Estás seguro que deseas eliminar este profesor? Esta acción no se puede deshacer.')) return;
     setProfesores(profesores.filter(p => p.id !== id));
     showToast(`✓ Profesor eliminado`);
   };
@@ -160,6 +163,7 @@ export default function App() {
   };
 
   const handleDeleteInventoryItem = (id: number) => {
+    if (!confirm('¿Estás seguro que deseas eliminar este ítem de inventario? Esta acción no se puede deshacer.')) return;
     setInventario(inventario.filter(i => i.id !== id));
     showToast(`✓ Ítem eliminado`);
   };
