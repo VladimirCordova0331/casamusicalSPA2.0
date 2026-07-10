@@ -16,6 +16,8 @@ import {
   GrupoFamiliar, SmartAlert
 } from './utils/types';
 import { getDashboardMetrics } from './utils/calculations';
+import { Toaster } from './components/ui/sonner';
+import { toast } from 'sonner';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard', Icon: BarChart3 },
@@ -42,11 +44,13 @@ export default function App() {
   const [gastos, setGastos] = useState<Gasto[]>(() => load('cm_gastos', []));
   const [inventario, setInventario] = useState<InventarioItem[]>(() => load('cm_inventario', []));
 
-  const [toast, setToast] = useState({ show: false, msg: '' });
-  const showToast = (msg: string) => {
-    setToast({ show: true, msg });
-    setTimeout(() => setToast({ show: false, msg: '' }), 2400);
-  };
+  const showToast = (msg: string) => { toast(msg); };
+
+  // Confirmation modal state & helper
+  const [confirmState, setConfirmState] = useState<{ open: boolean; message: string; resolver?: (v:boolean)=>void }>({ open: false, message: '' });
+  const requestConfirm = (message: string) => new Promise<boolean>((resolve) => {
+    setConfirmState({ open: true, message, resolver: resolve });
+  });
 
   useEffect(() => { save('cm_alumnos', alumnos); }, [alumnos]);
   useEffect(() => { save('cm_profesores', profesores); }, [profesores]);
@@ -111,8 +115,9 @@ export default function App() {
     showToast(`✓ ${newAlumno.nombre} agregado`);
   };
 
-  const handleDeleteAlumno = (id: number) => {
-    if (!confirm('¿Estás seguro que deseas eliminar este alumno? Esta acción no se puede deshacer.')) return;
+  const handleDeleteAlumno = async (id: number) => {
+    const ok = await requestConfirm('¿Estás seguro que deseas eliminar este alumno? Esta acción no se puede deshacer.');
+    if (!ok) return;
     setAlumnos(alumnos.filter(a => a.id !== id));
     showToast(`✓ Alumno eliminado`);
   };
@@ -133,8 +138,9 @@ export default function App() {
     showToast('✓ Gasto actualizado');
   };
 
-  const handleDeleteGasto = (id: number) => {
-    if (!confirm('¿Estás seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.')) return;
+  const handleDeleteGasto = async (id: number) => {
+    const ok = await requestConfirm('¿Estás seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.');
+    if (!ok) return;
     setGastos(gastos.filter(g => g.id !== id));
     showToast(`✓ Gasto eliminado`);
   };
@@ -150,8 +156,9 @@ export default function App() {
     showToast('✓ Profesor actualizado');
   };
 
-  const handleDeleteProfessor = (id: number) => {
-    if (!confirm('¿Estás seguro que deseas eliminar este profesor? Esta acción no se puede deshacer.')) return;
+  const handleDeleteProfessor = async (id: number) => {
+    const ok = await requestConfirm('¿Estás seguro que deseas eliminar este profesor? Esta acción no se puede deshacer.');
+    if (!ok) return;
     setProfesores(profesores.filter(p => p.id !== id));
     showToast(`✓ Profesor eliminado`);
   };
@@ -162,8 +169,9 @@ export default function App() {
     showToast(`✓ Ítem agregado al inventario`);
   };
 
-  const handleDeleteInventoryItem = (id: number) => {
-    if (!confirm('¿Estás seguro que deseas eliminar este ítem de inventario? Esta acción no se puede deshacer.')) return;
+  const handleDeleteInventoryItem = async (id: number) => {
+    const ok = await requestConfirm('¿Estás seguro que deseas eliminar este ítem de inventario? Esta acción no se puede deshacer.');
+    if (!ok) return;
     setInventario(inventario.filter(i => i.id !== id));
     showToast(`✓ Ítem eliminado`);
   };
@@ -253,8 +261,9 @@ export default function App() {
             students={alumnos}
             professors={profesores.map(p => p.nombre)}
             onAdd={handleAddAlumno}
-          onEdit={handleEditAlumno}
+            onEdit={handleEditAlumno}
             onDelete={handleDeleteAlumno}
+            requestConfirm={requestConfirm}
           />
         )}
 
@@ -264,6 +273,7 @@ export default function App() {
             onAddGasto={handleAddGasto}
             onEditGasto={handleEditGasto}
             onDeleteGasto={handleDeleteGasto}
+            requestConfirm={requestConfirm}
           />
         )}
 
@@ -273,6 +283,7 @@ export default function App() {
             onAddProfessor={handleAddProfessor}
             onEditProfessor={handleEditProfessor}
             onDeleteProfessor={handleDeleteProfessor}
+            requestConfirm={requestConfirm}
           />
         )}
 
@@ -301,14 +312,28 @@ export default function App() {
         )}
       </main>
 
-      {/* Toast */}
-      <div
-        className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg px-4 py-3 text-sm font-medium shadow-xl transition-all duration-300 ${
-          toast.show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
-        }`}
-      >
-        {toast.msg}
-      </div>
+      {/* Toaster (sonner) */}
+      <Toaster position="bottom-center" />
+
+      {/* Confirm Modal */}
+      {confirmState.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3">
+          <div className="bg-card border border-border rounded-lg p-4 w-full max-w-md">
+            <p className="text-sm font-semibold mb-2">Confirmación</p>
+            <p className="text-sm text-muted-foreground mb-4">{confirmState.message}</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => { confirmState.resolver?.(false); setConfirmState({ open: false, message: '' }); }}
+                className="px-3 py-2 bg-muted rounded-md"
+              >Cancelar</button>
+              <button
+                onClick={() => { confirmState.resolver?.(true); setConfirmState({ open: false, message: '' }); }}
+                className="px-3 py-2 bg-red-500 text-white rounded-md"
+              >Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/50 backdrop-blur-sm px-3 py-2 text-center text-xs text-muted-foreground">

@@ -11,6 +11,7 @@ interface StudentListProps {
   onAdd: (student: Omit<Alumno, 'id' | 'clases'>) => void;
   onEdit: (id: number, updates: Partial<Alumno>) => void;
   onDelete: (id: number) => void;
+  requestConfirm?: (message: string) => Promise<boolean>;
 }
 
 interface NewStudentForm {
@@ -39,7 +40,7 @@ const APORTE_OPTIONS = [
   { value: 0, label: 'Otro monto' },
 ];
 
-export function StudentModule({ students, professors, onAdd, onEdit, onDelete }: StudentListProps) {
+export function StudentModule({ students, professors, onAdd, onEdit, onDelete, requestConfirm }: StudentListProps) {
   const [newStudent, setNewStudent] = React.useState<NewStudentForm>(INITIAL_STUDENT);
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -61,7 +62,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
     });
   }, [students, searchQuery, filterInstrument, filterProfessor]);
 
-  const handleAddStudent = React.useCallback(() => {
+  const handleAddStudent = React.useCallback(async () => {
     const nombre = newStudent.nombre.trim();
     const apoderado = newStudent.apoderado.trim();
     if (!nombre || !apoderado) {
@@ -71,7 +72,8 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
 
     const instrumento = (newStudent.instrumento || '').trim();
     if (!instrumento) {
-      if (!confirm('No se indicó instrumento. ¿Deseas continuar sin instrumento?')) return;
+      const ok = requestConfirm ? await requestConfirm('No se indicó instrumento. ¿Deseas continuar sin instrumento?') : confirm('No se indicó instrumento. ¿Deseas continuar sin instrumento?');
+      if (!ok) return;
     }
 
     const aporte = newStudent.aporte === 0 ? Number(newStudent.aporteCustom) : Number(newStudent.aporte);
@@ -82,7 +84,8 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
 
     const isDuplicate = students.some(s => s.nombre.toLowerCase() === nombre.toLowerCase() && s.apoderado.toLowerCase() === apoderado.toLowerCase());
     if (isDuplicate) {
-      if (!confirm('Ya existe un alumno con ese nombre y apoderado. ¿Deseas agregar igualmente?')) return;
+      const ok = requestConfirm ? await requestConfirm('Ya existe un alumno con ese nombre y apoderado. ¿Deseas agregar igualmente?') : confirm('Ya existe un alumno con ese nombre y apoderado. ¿Deseas agregar igualmente?');
+      if (!ok) return;
     }
 
     onAdd({
@@ -96,7 +99,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
     });
 
     setNewStudent(INITIAL_STUDENT);
-  }, [newStudent, onAdd, students]);
+  }, [newStudent, onAdd, students, requestConfirm]);
 
   const updateField = React.useCallback(<K extends keyof NewStudentForm>(
     field: K,

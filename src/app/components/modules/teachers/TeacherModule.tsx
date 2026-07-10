@@ -10,6 +10,7 @@ interface TeacherModuleProps {
   onAddProfessor: (prof: Omit<Profesor, 'id'>) => void;
   onEditProfessor: (id: number, updates: Partial<Profesor>) => void;
   onDeleteProfessor: (id: number) => void;
+  requestConfirm?: (message: string) => Promise<boolean>;
 }
 
 const INITIAL_PROFESSOR = {
@@ -23,6 +24,7 @@ export function TeacherModule({
   onAddProfessor,
   onEditProfessor,
   onDeleteProfessor,
+  requestConfirm,
 }: TeacherModuleProps) {
   try {
   const [newProf, setNewProf] = React.useState(INITIAL_PROFESSOR);
@@ -41,7 +43,7 @@ export function TeacherModule({
     });
   }, [professors, searchQuery, filterEspecialidad]);
 
-  const handleAdd = React.useCallback(() => {
+  const handleAdd = React.useCallback(async () => {
     const nombre = (newProf.nombre || '').trim();
     const especialidad = (newProf.especialidad || '').trim();
     if (!nombre || !especialidad) {
@@ -57,7 +59,8 @@ export function TeacherModule({
 
     const isDuplicate = professors.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
     if (isDuplicate) {
-      if (!confirm('Ya existe un profesor con ese nombre. ¿Deseas agregar igualmente?')) return;
+      const ok = requestConfirm ? await requestConfirm('Ya existe un profesor con ese nombre. ¿Deseas agregar igualmente?') : confirm('Ya existe un profesor con ese nombre. ¿Deseas agregar igualmente?');
+      if (!ok) return;
     }
 
     onAddProfessor({
@@ -67,7 +70,7 @@ export function TeacherModule({
     });
 
     setNewProf(INITIAL_PROFESSOR);
-  }, [newProf, onAddProfessor, professors]);
+  }, [newProf, onAddProfessor, professors, requestConfirm]);
 
   const totalProfesores = professors.length;
   const promedio = professors.length > 0

@@ -10,6 +10,7 @@ interface FinanceModuleProps {
   onAddGasto: (gasto: Omit<Gasto, 'id'>) => void;
   onEditGasto?: (id: number, updates: Partial<Gasto>) => void;
   onDeleteGasto: (id: number) => void;
+  requestConfirm?: (message: string) => Promise<boolean>;
 }
 
 const CATEGORIES = [
@@ -32,7 +33,7 @@ const INITIAL_GASTO = {
   automatico: false,
 };
 
-export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModuleProps) {
+export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfirm }: FinanceModuleProps) {
   const [newGasto, setNewGasto] = React.useState(INITIAL_GASTO);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterCategory, setFilterCategory] = React.useState('');
@@ -56,7 +57,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editGasto, setEditGasto] = React.useState<Omit<Gasto, 'id'> | null>(null);
 
-  const handleAdd = React.useCallback(() => {
+  const handleAdd = React.useCallback(async () => {
     if (!newGasto.concepto.trim() || newGasto.monto <= 0) {
       alert('Por favor completa los campos');
       return;
@@ -68,7 +69,8 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
 
     const duplicate = gastos.some(g => g.concepto.toLowerCase() === concepto.toLowerCase() && g.monto === monto && g.fecha === fecha);
     if (duplicate) {
-      if (!confirm('Ya existe un gasto idéntico (concepto, monto y fecha). ¿Deseas agregarlo igualmente?')) return;
+      const ok = requestConfirm ? await requestConfirm('Ya existe un gasto idéntico (concepto, monto y fecha). ¿Deseas agregarlo igualmente?') : confirm('Ya existe un gasto idéntico (concepto, monto y fecha). ¿Deseas agregarlo igualmente?');
+      if (!ok) return;
     }
 
     onAddGasto({
@@ -80,7 +82,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
     });
 
     setNewGasto(INITIAL_GASTO);
-  }, [newGasto, onAddGasto, gastos]);
+  }, [newGasto, onAddGasto, gastos, requestConfirm]);
 
   const exportGastosCSV = React.useCallback(() => {
     if (!filteredGastos || filteredGastos.length === 0) {
