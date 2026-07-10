@@ -105,6 +105,60 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
     a.remove();
   }, [filteredGastos]);
 
+  const exportGastosPDF = React.useCallback(() => {
+    if (!filteredGastos || filteredGastos.length === 0) {
+      alert('No hay gastos para exportar');
+      return;
+    }
+
+    const title = 'Reporte de Gastos - ' + new Date().toLocaleDateString();
+    const styles = `
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { font-size: 18px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
+        th { background: #f3f4f6; }
+      </style>
+    `;
+
+    const rows = filteredGastos.map(g => `
+      <tr>
+        <td>${escapeHtml(g.concepto)}</td>
+        <td>${escapeHtml(g.categoria)}</td>
+        <td style="text-align:right">${g.monto.toLocaleString('es-CL')}</td>
+        <td>${g.fecha}</td>
+        <td style="text-align:center">${g.automatico ? 'Sí' : 'No'}</td>
+      </tr>
+    `).join('');
+
+    const html = `<!doctype html><html><head><meta charset="utf-8">${styles}</head><body>
+      <h1>${title}</h1>
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Categoría</th><th>Monto</th><th>Fecha</th><th>Automático</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      alert('No se puede abrir ventana para imprimir. Revisa tu bloqueador de pop-ups.');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    // Esperar que el contenido cargue
+    setTimeout(() => { win.print(); }, 500);
+  }, [filteredGastos]);
+
+  // helper to escape HTML
+  function escapeHtml(str: string) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   return (
     <div className="space-y-4">
       {/* Summary */}
@@ -172,6 +226,13 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
               title="Exportar gastos filtrados a CSV"
             >
               Exportar CSV
+            </button>
+            <button
+              onClick={exportGastosPDF}
+              className="ml-2 inline-flex items-center gap-2 px-3 py-2 bg-muted hover:bg-muted/90 text-foreground rounded-md text-sm border border-border"
+              title="Exportar gastos filtrados a PDF (abrirá ventana para imprimir)"
+            >
+              Exportar PDF
             </button>
           </div>
         <button
