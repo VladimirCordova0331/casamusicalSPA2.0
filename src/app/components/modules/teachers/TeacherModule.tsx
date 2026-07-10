@@ -1,5 +1,6 @@
 import React from 'react';
 import { GraduationCap, Plus, Pencil, Trash2 } from 'lucide-react';
+import { SearchBar } from '../../ui/common/SearchBar';
 import { Profesor } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
 
@@ -24,6 +25,19 @@ export function TeacherModule({
 }: TeacherModuleProps) {
   const [newProf, setNewProf] = React.useState(INITIAL_PROFESSOR);
   const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [filterEspecialidad, setFilterEspecialidad] = React.useState('');
+
+  const especialidades = Array.from(new Set(professors.map(p => p.especialidad))).filter(Boolean);
+
+  // filtered
+  const filteredProfessors = React.useMemo(() => {
+    return professors.filter(prof => {
+      const matchesSearch = prof.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || prof.especialidad.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesEspecialidad = !filterEspecialidad || prof.especialidad === filterEspecialidad;
+      return matchesSearch && matchesEspecialidad;
+    });
+  }, [professors, searchQuery, filterEspecialidad]);
 
   const handleAdd = React.useCallback(() => {
     if (!newProf.nombre.trim() || !newProf.especialidad.trim()) {
@@ -102,15 +116,29 @@ export function TeacherModule({
 
       {/* Professors List */}
       <div className="bg-card border border-border rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <GraduationCap className="w-4 h-4 text-accent" />
-          <h3 className="text-sm font-semibold">Profesores Registrados</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-accent" />
+            <h3 className="text-sm font-semibold">Profesores Registrados</h3>
+            <span className="text-xs text-muted-foreground ml-2">({filteredProfessors.length})</span>
+          </div>
+
+          <div className="flex gap-2 items-center w-1/2">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Buscar por nombre o especialidad" />
+            <FormSelect
+              label="Especialidad"
+              value={filterEspecialidad}
+              onChange={(e) => setFilterEspecialidad(e.target.value)}
+              options={[{ value: '', label: 'Todas' }, ...especialidades.map(s => ({ value: s, label: s }))]}
+            />
+          </div>
         </div>
+
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {professors.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">No hay profesores registrados</p>
+          {filteredProfessors.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No hay profesores que coincidan</p>
           ) : (
-            professors.map(prof => (
+            filteredProfessors.map(prof => (
               <div key={prof.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{prof.nombre}</p>

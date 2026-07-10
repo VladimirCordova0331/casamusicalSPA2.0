@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wallet, Plus, Trash2 } from 'lucide-react';
+import { SearchBar } from '../../ui/common/SearchBar';
 import { Gasto } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
 import { FormSelect } from '../../ui/inputs/FormSelect';
@@ -32,11 +33,21 @@ const INITIAL_GASTO = {
 
 export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModuleProps) {
   const [newGasto, setNewGasto] = React.useState(INITIAL_GASTO);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [filterCategory, setFilterCategory] = React.useState('');
 
-  const totalGastos = gastos.reduce((s, g) => s + g.monto, 0);
+  const filteredGastos = React.useMemo(() => {
+    return gastos.filter(g => {
+      const matchesSearch = g.concepto.toLowerCase().includes(searchQuery.toLowerCase()) || g.categoria.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = !filterCategory || g.categoria === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [gastos, searchQuery, filterCategory]);
+
+  const totalGastos = filteredGastos.reduce((s, g) => s + g.monto, 0);
   const gastosPorCategoria = CATEGORIES.map(cat => ({
     ...cat,
-    total: gastos
+    total: filteredGastos
       .filter(g => g.categoria === cat.value)
       .reduce((s, g) => s + g.monto, 0),
   }));
@@ -111,6 +122,15 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
             label="Fecha"
           />
         </div>
+          <div className="mt-4 flex items-center gap-2">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Buscar concepto o categoría" />
+            <FormSelect
+              label="Filtrar categoría"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              options={[{ value: '', label: 'Todas' }, ...CATEGORIES]}
+            />
+          </div>
         <button
           onClick={handleAdd}
           className="w-full mt-3 bg-accent hover:bg-accent/80 text-accent-foreground font-semibold py-2 rounded-lg transition-colors"
@@ -141,10 +161,10 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
           <h3 className="text-sm font-semibold">Últimos Gastos</h3>
         </div>
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {gastos.length === 0 ? (
+          {filteredGastos.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-4">No hay gastos registrados</p>
           ) : (
-            gastos.slice().reverse().map(gasto => (
+            filteredGastos.slice().reverse().map(gasto => (
               <div key={gasto.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{gasto.concepto}</p>
