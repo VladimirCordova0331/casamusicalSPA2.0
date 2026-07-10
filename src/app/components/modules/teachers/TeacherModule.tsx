@@ -23,6 +23,7 @@ export function TeacherModule({
   onEditProfessor,
   onDeleteProfessor,
 }: TeacherModuleProps) {
+  try {
   const [newProf, setNewProf] = React.useState(INITIAL_PROFESSOR);
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -206,4 +207,13 @@ export function TeacherModule({
       </div>
     </div>
   );
+  } catch (err) {
+    console.error('TeacherModule render error:', err);
+    return (
+      <div className="bg-card border border-red-200 rounded-lg p-4">
+        <p className="text-sm font-semibold text-red-600">Error cargando módulo Profesores</p>
+        <pre className="text-xs text-muted-foreground mt-2">{String(err)}</pre>
+      </div>
+    );
+  }
 }
