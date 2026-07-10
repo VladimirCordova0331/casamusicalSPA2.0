@@ -121,6 +121,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
       return;
     }
 
+    const logoUrl = `${window.location.origin}${import.meta.env.BASE_URL}assets/casa-musical-logo.png`;
     const fecha = new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
     const total = filteredGastos.reduce((s, g) => s + g.monto, 0);
 
@@ -146,6 +147,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
     body{font-family:'Inter',Arial,sans-serif;background:#FAF6EE;color:#1C1008;padding:36px 40px;max-width:760px;margin:0 auto;font-size:13px}
     /* ── Encabezado ── */
     .header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:14px;border-bottom:2px solid #C9A227;margin-bottom:22px}
+    .brand-logo{height:48px;width:auto;object-fit:contain}
     .brand-name{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#1C1008;line-height:1.1}
     .brand-sub{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#8B7355;margin-top:3px}
     .doc-meta{text-align:right}
@@ -173,9 +175,12 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
 </head>
 <body>
   <div class="header">
-    <div>
-      <div class="brand-name">🎵 ${BUSINESS_CONFIG.brandName}</div>
-      <div class="brand-sub">Academia SPA</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <img src="${logoUrl}" alt="${BUSINESS_CONFIG.brandName}" class="brand-logo" onerror="this.style.display='none'" />
+      <div>
+        <div class="brand-name">${BUSINESS_CONFIG.brandName}</div>
+        <div class="brand-sub">Academia SPA</div>
+      </div>
     </div>
     <div class="doc-meta">
       <div class="doc-title">Reporte de Gastos</div>

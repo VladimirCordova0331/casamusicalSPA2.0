@@ -97,7 +97,7 @@ export function DocumentsModule({
   }, [newDoc, onAddDocument]);
 
   const handleDownload = (doc: Documento) => {
-    const logoUrl = `${import.meta.env.BASE_URL}assets/casa-musical-logo.png`;
+    const logoUrl = `${window.location.origin}${import.meta.env.BASE_URL}assets/casa-musical-logo.png`;
     const tipoLabel = DOCUMENT_TYPES.find(t => t.value === doc.tipo)?.label || doc.tipo;
     const tipoColor = DOCUMENT_TYPE_COLORS[doc.tipo] || DOCUMENT_TYPE_COLORS.otro;
     const fechaEmision = new Date().toLocaleDateString('es-CL', {
