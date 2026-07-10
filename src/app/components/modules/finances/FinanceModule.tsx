@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wallet, Plus, Trash2 } from 'lucide-react';
+import { Wallet, Plus, Trash2, Pencil } from 'lucide-react';
 import { SearchBar } from '../../ui/common/SearchBar';
 import { Gasto } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
@@ -8,6 +8,7 @@ import { FormSelect } from '../../ui/inputs/FormSelect';
 interface FinanceModuleProps {
   gastos: Gasto[];
   onAddGasto: (gasto: Omit<Gasto, 'id'>) => void;
+  onEditGasto?: (id: number, updates: Partial<Gasto>) => void;
   onDeleteGasto: (id: number) => void;
 }
 
@@ -51,6 +52,9 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
       .filter(g => g.categoria === cat.value)
       .reduce((s, g) => s + g.monto, 0),
   }));
+
+  const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [editGasto, setEditGasto] = React.useState<Omit<Gasto, 'id'> | null>(null);
 
   const handleAdd = React.useCallback(() => {
     if (!newGasto.concepto.trim() || newGasto.monto <= 0) {
@@ -269,20 +273,50 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
             <p className="text-xs text-muted-foreground text-center py-4">No hay gastos registrados</p>
           ) : (
             filteredGastos.slice().reverse().map(gasto => (
-              <div key={gasto.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{gasto.concepto}</p>
-                  <p className="text-xs text-muted-foreground">{gasto.categoria} • {gasto.fecha}</p>
-                </div>
-                <div className="flex items-center gap-2 ml-2">
-                  <p className="text-sm font-bold text-red-500">${gasto.monto.toLocaleString('es-CL')}</p>
-                  <button
-                    onClick={() => onDeleteGasto(gasto.id)}
-                    className="p-1.5 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+              <div key={gasto.id} className="bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
+                {editingId === gasto.id ? (
+                  <div className="space-y-2">
+                    <FormInput value={editGasto?.concepto || gasto.concepto} onChange={(e) => setEditGasto(prev => ({ ...(prev || gasto), concepto: e.target.value }))} label="Concepto" />
+                    <FormSelect label="Categoría" value={editGasto?.categoria || gasto.categoria} onChange={(e) => setEditGasto(prev => ({ ...(prev || gasto), categoria: e.target.value }))} options={CATEGORIES} />
+                    <FormInput type="number" value={String(editGasto?.monto ?? gasto.monto)} onChange={(e) => setEditGasto(prev => ({ ...(prev || gasto), monto: Number(e.target.value) }))} label="Monto" />
+                    <FormInput type="date" value={editGasto?.fecha || gasto.fecha} onChange={(e) => setEditGasto(prev => ({ ...(prev || gasto), fecha: e.target.value }))} label="Fecha" />
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={!!(editGasto?.automatico ?? gasto.automatico)} onChange={(e) => setEditGasto(prev => ({ ...(prev || gasto), automatico: e.target.checked }))} />
+                        <span className="text-xs">Automático</span>
+                      </label>
+                      <div className="ml-auto flex gap-2">
+                        <button onClick={() => {
+                          if (!editGasto) return;
+                          if (!editGasto.concepto.trim() || !editGasto.monto || editGasto.monto <= 0) { alert('Concepto y monto válidos son requeridos'); return; }
+                          onEditGasto?.(gasto.id, editGasto);
+                          setEditingId(null);
+                          setEditGasto(null);
+                        }} className="px-3 py-2 bg-accent text-accent-foreground rounded-md">Guardar</button>
+                        <button onClick={() => { setEditingId(null); setEditGasto(null); }} className="px-3 py-2 bg-muted text-foreground rounded-md">Cancelar</button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{gasto.concepto}</p>
+                      <p className="text-xs text-muted-foreground">{gasto.categoria} • {gasto.fecha}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <p className="text-sm font-bold text-red-500">${gasto.monto.toLocaleString('es-CL')}</p>
+                      <button onClick={() => { setEditingId(gasto.id); setEditGasto({ concepto: gasto.concepto, categoria: gasto.categoria, monto: gasto.monto, fecha: gasto.fecha, automatico: gasto.automatico }); }} className="p-1.5 hover:bg-accent/20 text-accent rounded-md transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteGasto(gasto.id)}
+                        className="p-1.5 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

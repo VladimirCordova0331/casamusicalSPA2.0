@@ -127,6 +127,11 @@ export default function App() {
     showToast(`✓ Gasto registrado`);
   };
 
+  const handleEditGasto = (id: number, updates: Partial<Gasto>) => {
+    setGastos(gastos.map(g => g.id === id ? { ...g, ...updates } : g));
+    showToast('✓ Gasto actualizado');
+  };
+
   const handleDeleteGasto = (id: number) => {
     setGastos(gastos.filter(g => g.id !== id));
     showToast(`✓ Gasto eliminado`);
@@ -253,6 +258,7 @@ export default function App() {
           <FinanceModule
             gastos={gastos}
             onAddGasto={handleAddGasto}
+            onEditGasto={handleEditGasto}
             onDeleteGasto={handleDeleteGasto}
           />
         )}
