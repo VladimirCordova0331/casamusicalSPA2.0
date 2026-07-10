@@ -450,7 +450,7 @@ export default function App() {
           {/* Marca */}
           <div className="flex items-center gap-3">
             <img
-              src="/assets/casa-musical-logo.png"
+              src={`${import.meta.env.BASE_URL}assets/casa-musical-logo.png`}
               alt="Casa Musical Academia"
               className="w-12 h-12 object-contain drop-shadow-sm"
             />
