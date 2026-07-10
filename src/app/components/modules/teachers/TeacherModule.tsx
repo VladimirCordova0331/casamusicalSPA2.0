@@ -3,6 +3,7 @@ import { GraduationCap, Plus, Pencil, Trash2 } from 'lucide-react';
 import { SearchBar } from '../../ui/common/SearchBar';
 import { Profesor } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
+import { FormSelect } from '../../ui/inputs/FormSelect';
 
 interface TeacherModuleProps {
   professors: Profesor[];
