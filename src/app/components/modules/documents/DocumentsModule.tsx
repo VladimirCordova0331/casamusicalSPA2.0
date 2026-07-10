@@ -86,6 +86,7 @@ export function DocumentsModule({
   }, [newDoc, onAddDocument]);
 
   const handleDownload = (doc: Documento) => {
+    const logoUrl = `${import.meta.env.BASE_URL}assets/casa-musical-logo.png`;
     const tipoLabel = DOCUMENT_TYPES.find(t => t.value === doc.tipo)?.label || doc.tipo;
     const fechaEmision = new Date().toLocaleDateString('es-CL', {
       day: '2-digit',
@@ -201,7 +202,7 @@ export function DocumentsModule({
 <body>
   <header class="header">
     <div class="brand-wrap">
-      <img class="brand-logo" src="/assets/casa-musical-logo.png" alt="Casa Musical Logo" />
+      <img class="brand-logo" src="${logoUrl}" alt="Casa Musical Logo" />
       <div>
         <h1 class="brand-title">Casa Musical</h1>
         <p class="brand-sub">Academia SPA</p>

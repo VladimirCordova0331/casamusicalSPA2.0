@@ -189,7 +189,8 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete, r
   ), []);
 
   const exportParentVoucher = React.useCallback((student: Alumno) => {
-    const {
+  const logoUrl = `${import.meta.env.BASE_URL}assets/casa-musical-logo.png`;
+  const {
       monthClasses,
       aporteMensual,
       valorClase,
@@ -224,7 +225,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete, r
     .watermark {
       position: fixed;
       inset: 0;
-      background: url('/assets/casa-musical-logo.png') no-repeat center 56%;
+      background: url('${logoUrl}') no-repeat center 56%;
       background-size: 340px;
       opacity: 0.04;
       pointer-events: none;
@@ -257,7 +258,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete, r
   <main class="sheet">
   <header class="header">
     <div class="brand">
-      <img src="/assets/casa-musical-logo.png" alt="Casa Musical" />
+      <img src="${logoUrl}" alt="Casa Musical" />
       <div>
         <p class="brand-title">${BUSINESS_CONFIG.brandName}</p>
         <p class="brand-sub">Academia SPA</p>
