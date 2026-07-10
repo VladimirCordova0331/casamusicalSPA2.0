@@ -105,16 +105,16 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
         <MetricCard
           label="Ingresos"
           value={`$${(metrics.ingresosMensuales / 1000).toFixed(0)}K`}
-          change="+12% vs mes anterior"
+          change={metrics.ingresosMensuales > 0 ? 'Base mensual de alumnos' : 'Sin alumnos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
-          trend="up"
+          trend="neutral"
         />
         <MetricCard
           label="Gastos"
           value={`$${(metrics.gastosMensuales / 1000).toFixed(0)}K`}
-          change="+5% vs mes anterior"
+          change={metrics.gastosMensuales > 0 ? 'Total gastos registrados' : 'Sin gastos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
-          trend="up"
+          trend="neutral"
         />
         <MetricCard
           label="Utilidad"
@@ -126,9 +126,11 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
         <MetricCard
           label="Alumnos"
           value={metrics.totalAlumnos.toString()}
-          change={`${metrics.tasaOcupacion.toFixed(0)}% ocupación`}
+          change={metrics.alumnosConPagoPendiente > 0
+            ? `${metrics.alumnosConPagoPendiente} con pago pendiente`
+            : 'Todos al día con pagos'}
           icon={<Users className="w-4 h-4" />}
-          trend="neutral"
+          trend={metrics.alumnosConPagoPendiente > 0 ? 'down' : 'up'}
         />
       </div>
 

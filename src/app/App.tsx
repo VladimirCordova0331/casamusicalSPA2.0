@@ -48,6 +48,13 @@ export default function App() {
   const [inventario, setInventario] = useState<InventarioItem[]>(() => load('cm_inventario', []));
   const [documentos, setDocumentos] = useState<Documento[]>(() => load('cm_documentos', []));
 
+  // Recordatorio de respaldo: guarda timestamp del último respaldo
+  const [lastBackupTs, setLastBackupTs] = useState<number>(() => load('cm_last_backup_ts', 0));
+  const daysSinceBackup = lastBackupTs > 0
+    ? Math.floor((Date.now() - lastBackupTs) / (1000 * 60 * 60 * 24))
+    : null;
+  const hasData = alumnos.length + gastos.length > 0;
+  const showBackupReminder = hasData && (lastBackupTs === 0 || (daysSinceBackup !== null && daysSinceBackup >= 7));
   const showToast = (msg: string) => { toast(msg); };
 
   // Confirmation modal state & helper
@@ -381,6 +388,8 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    save('cm_last_backup_ts', Date.now());
+    setLastBackupTs(Date.now());
     showToast(`✓ Respaldo descargado (${totalRegistros} registros)`);
   };
 
@@ -586,6 +595,27 @@ export default function App() {
 
       {/* ── Contenido principal ──────────────────────────── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-5 pb-16 fade-in-up-soft">
+
+        {/* Banner recordatorio de respaldo */}
+        {showBackupReminder && (
+          <div className="mb-4 flex items-center justify-between gap-3 bg-yellow-500/10 border border-yellow-500/40 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-base flex-shrink-0">💾</span>
+              <p className="text-xs text-yellow-700 dark:text-yellow-400 font-medium">
+                {lastBackupTs === 0
+                  ? 'Aún no tienes un respaldo guardado. Descárgalo para no perder tus datos.'
+                  : `Han pasado ${daysSinceBackup} días desde tu último respaldo. Te recomendamos descargar uno nuevo.`}
+              </p>
+            </div>
+            <button
+              onClick={handleExportBackup}
+              className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/30 transition-colors"
+            >
+              Descargar ahora
+            </button>
+          </div>
+        )}
+
         {tab === 'dashboard' && (
           <Dashboard
             metrics={metrics}
