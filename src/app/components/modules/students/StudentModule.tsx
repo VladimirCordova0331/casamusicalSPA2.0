@@ -1,8 +1,9 @@
 import React from 'react';
-import { Users, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Filter } from 'lucide-react';
 import { Alumno } from '../../../utils/types';
 import { FormInput } from '../../ui/inputs/FormInput';
 import { FormSelect } from '../../ui/inputs/FormSelect';
+import { SearchBar } from '../../ui/common/SearchBar';
 
 interface StudentListProps {
   students: Alumno[];
@@ -41,6 +42,24 @@ const APORTE_OPTIONS = [
 export function StudentModule({ students, professors, onAdd, onEdit, onDelete }: StudentListProps) {
   const [newStudent, setNewStudent] = React.useState<NewStudentForm>(INITIAL_STUDENT);
   const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [filterInstrument, setFilterInstrument] = React.useState<string>('');
+  const [filterProfessor, setFilterProfessor] = React.useState<string>('');
+
+  const instrumentos = Array.from(new Set(students.map(s => s.instrumento))).filter(Boolean);
+
+  // Filtered students
+  const filteredStudents = React.useMemo(() => {
+    return students.filter(student => {
+      const matchesSearch = 
+        student.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.apoderado.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesInstrument = !filterInstrument || student.instrumento === filterInstrument;
+      const matchesProfessor = !filterProfessor || student.profesor === filterProfessor;
+      
+      return matchesSearch && matchesInstrument && matchesProfessor;
+    });
+  }, [students, searchQuery, filterInstrument, filterProfessor]);
 
   const handleAddStudent = React.useCallback(() => {
     if (!newStudent.nombre.trim() || !newStudent.apoderado.trim()) {
@@ -146,15 +165,37 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
 
       {/* Students List */}
       <div className="bg-card border border-border rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-4 h-4 text-accent" />
-          <h3 className="text-sm font-semibold">Alumnos Registrados</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-accent" />
+            <h3 className="text-sm font-semibold">Alumnos Registrados</h3>
+            <span className="text-xs text-muted-foreground ml-2">({filteredStudents.length})</span>
+          </div>
+
+          <div className="flex gap-2 items-center w-1/2">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Buscar por alumno o apoderado" />
+            <div className="flex gap-2 ml-2">
+              <FormSelect
+                label="Instrumento"
+                value={filterInstrument}
+                onChange={(e) => setFilterInstrument(e.target.value)}
+                options={[{ value: '', label: 'Todos' }, ...instrumentos.map(i => ({ value: i, label: i }))]}
+              />
+              <FormSelect
+                label="Profesor"
+                value={filterProfessor}
+                onChange={(e) => setFilterProfessor(e.target.value)}
+                options={[{ value: '', label: 'Todos' }, ...professors.map(p => ({ value: p, label: p }))]}
+              />
+            </div>
+          </div>
         </div>
+
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {students.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">No hay alumnos registrados</p>
+          {filteredStudents.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No hay alumnos que coincidan</p>
           ) : (
-            students.map(student => (
+            filteredStudents.map(student => (
               <div key={student.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{student.nombre}</p>
