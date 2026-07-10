@@ -1,0 +1,63 @@
+/* ─── Scrollbar cálido y delgado ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201,162,39,0.30); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(201,162,39,0.55); }
+
+/* ─── Selección de texto en dorado ─── */
+::selection { background: rgba(201,162,39,0.25); color: inherit; }
+
+/* ─── Transiciones suaves globales para botones / tarjetas ─── */
+button, a, input, select, textarea {
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease, box-shadow 0.15s ease,
+              opacity 0.15s ease;
+}
+
+/* ─── Sombra cálida para tarjetas ─── */
+.card-warm {
+  box-shadow: 0 1px 6px rgba(139, 100, 40, 0.08),
+              0 0 0 1px rgba(139, 100, 40, 0.06);
+}
+
+/* ─── Fuente display para títulos ─── */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ─── Focus visible accesible con anillo dorado ─── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes fadeInUpSoft {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPop {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in-up-soft {
+  animation: fadeInUpSoft 220ms ease-out;
+}
+
+.soft-pop {
+  animation: softPop 180ms ease-out;
+}
