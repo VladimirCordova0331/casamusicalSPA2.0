@@ -62,23 +62,41 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
   }, [students, searchQuery, filterInstrument, filterProfessor]);
 
   const handleAddStudent = React.useCallback(() => {
-    if (!newStudent.nombre.trim() || !newStudent.apoderado.trim()) {
+    const nombre = newStudent.nombre.trim();
+    const apoderado = newStudent.apoderado.trim();
+    if (!nombre || !apoderado) {
       alert('Por favor completa nombre y apoderado');
       return;
     }
 
+    const instrumento = (newStudent.instrumento || '').trim();
+    if (!instrumento) {
+      if (!confirm('No se indicó instrumento. ¿Deseas continuar sin instrumento?')) return;
+    }
+
+    const aporte = newStudent.aporte === 0 ? Number(newStudent.aporteCustom) : Number(newStudent.aporte);
+    if (!aporte || aporte <= 0) {
+      alert('El aporte debe ser mayor que 0');
+      return;
+    }
+
+    const isDuplicate = students.some(s => s.nombre.toLowerCase() === nombre.toLowerCase() && s.apoderado.toLowerCase() === apoderado.toLowerCase());
+    if (isDuplicate) {
+      if (!confirm('Ya existe un alumno con ese nombre y apoderado. ¿Deseas agregar igualmente?')) return;
+    }
+
     onAdd({
-      nombre: newStudent.nombre,
-      apoderado: newStudent.apoderado,
-      instrumento: newStudent.instrumento,
+      nombre,
+      apoderado,
+      instrumento,
       profesor: newStudent.profesor,
-      aporte: newStudent.aporte === 0 ? newStudent.aporteCustom : newStudent.aporte,
+      aporte,
       modalidad: 'individual',
       grupoFamiliar: false,
     });
 
     setNewStudent(INITIAL_STUDENT);
-  }, [newStudent, onAdd]);
+  }, [newStudent, onAdd, students]);
 
   const updateField = React.useCallback(<K extends keyof NewStudentForm>(
     field: K,

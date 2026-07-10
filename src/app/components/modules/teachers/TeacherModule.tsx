@@ -40,19 +40,32 @@ export function TeacherModule({
   }, [professors, searchQuery, filterEspecialidad]);
 
   const handleAdd = React.useCallback(() => {
-    if (!newProf.nombre.trim() || !newProf.especialidad.trim()) {
+    const nombre = (newProf.nombre || '').trim();
+    const especialidad = (newProf.especialidad || '').trim();
+    if (!nombre || !especialidad) {
       alert('Por favor completa los campos');
       return;
     }
 
+    const valorHora = Number(newProf.valorHora) || 0;
+    if (valorHora <= 0) {
+      alert('El valor por hora debe ser mayor que 0');
+      return;
+    }
+
+    const isDuplicate = professors.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    if (isDuplicate) {
+      if (!confirm('Ya existe un profesor con ese nombre. ¿Deseas agregar igualmente?')) return;
+    }
+
     onAddProfessor({
-      nombre: newProf.nombre,
-      especialidad: newProf.especialidad,
-      valorHora: newProf.valorHora,
+      nombre,
+      especialidad,
+      valorHora,
     });
 
     setNewProf(INITIAL_PROFESSOR);
-  }, [newProf, onAddProfessor]);
+  }, [newProf, onAddProfessor, professors]);
 
   const totalProfesores = professors.length;
   const promedio = professors.length > 0

@@ -58,16 +58,25 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
       return;
     }
 
+    const concepto = newGasto.concepto.trim();
+    const monto = Number(newGasto.monto);
+    const fecha = newGasto.fecha;
+
+    const duplicate = gastos.some(g => g.concepto.toLowerCase() === concepto.toLowerCase() && g.monto === monto && g.fecha === fecha);
+    if (duplicate) {
+      if (!confirm('Ya existe un gasto idéntico (concepto, monto y fecha). ¿Deseas agregarlo igualmente?')) return;
+    }
+
     onAddGasto({
-      concepto: newGasto.concepto,
+      concepto,
       categoria: newGasto.categoria,
-      monto: newGasto.monto,
-      fecha: newGasto.fecha,
+      monto,
+      fecha,
       automatico: newGasto.automatico,
     });
 
     setNewGasto(INITIAL_GASTO);
-  }, [newGasto, onAddGasto]);
+  }, [newGasto, onAddGasto, gastos]);
 
   const exportGastosCSV = React.useCallback(() => {
     if (!filteredGastos || filteredGastos.length === 0) {
