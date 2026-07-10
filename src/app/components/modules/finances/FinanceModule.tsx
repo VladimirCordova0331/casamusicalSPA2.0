@@ -69,6 +69,33 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
     setNewGasto(INITIAL_GASTO);
   }, [newGasto, onAddGasto]);
 
+  const exportGastosCSV = React.useCallback(() => {
+    if (!filteredGastos || filteredGastos.length === 0) {
+      alert('No hay gastos para exportar');
+      return;
+    }
+
+    const header = ['Concepto', 'Categoría', 'Monto', 'Fecha', 'Automático'];
+    const rows = filteredGastos.map(g => [
+      '"' + g.concepto.replace(/"/g, '""') + '"',
+      g.categoria,
+      g.monto,
+      g.fecha,
+      g.automatico ? 'Sí' : 'No'
+    ].join(','));
+
+    const csv = [header.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gastos_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, [filteredGastos]);
+
   return (
     <div className="space-y-4">
       {/* Summary */}
@@ -130,6 +157,13 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto }: FinanceModu
               onChange={(e) => setFilterCategory(e.target.value)}
               options={[{ value: '', label: 'Todas' }, ...CATEGORIES]}
             />
+            <button
+              onClick={exportGastosCSV}
+              className="ml-2 inline-flex items-center gap-2 px-3 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-md text-sm"
+              title="Exportar gastos filtrados a CSV"
+            >
+              Exportar CSV
+            </button>
           </div>
         <button
           onClick={handleAdd}
