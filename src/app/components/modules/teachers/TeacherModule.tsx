@@ -152,26 +152,45 @@ export function TeacherModule({
             <p className="text-xs text-muted-foreground text-center py-4">No hay profesores que coincidan</p>
           ) : (
             filteredProfessors.map(prof => (
-              <div key={prof.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{prof.nombre}</p>
-                  <p className="text-xs text-muted-foreground">{prof.especialidad}</p>
-                  <p className="text-xs text-accent font-medium mt-1">${prof.valorHora.toLocaleString('es-CL')}/hora</p>
-                </div>
-                <div className="flex gap-1 ml-2">
-                  <button
-                    onClick={() => setEditingId(prof.id)}
-                    className="p-2 hover:bg-accent/20 text-accent rounded-md transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteProfessor(prof.id)}
-                    className="p-2 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+              <div key={prof.id} className="bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
+                {editingId === prof.id ? (
+                  <div className="space-y-2">
+                    <FormInput value={newProf.nombre} onChange={(e)=> setNewProf(prev=>({...prev, nombre: e.target.value}))} label="Nombre" />
+                    <FormInput value={newProf.especialidad} onChange={(e)=> setNewProf(prev=>({...prev, especialidad: e.target.value}))} label="Especialidad" />
+                    <FormInput type="number" value={newProf.valorHora || ''} onChange={(e)=> setNewProf(prev=>({...prev, valorHora: Number(e.target.value)}))} label="Valor Hora" />
+                    <div className="flex gap-2">
+                      <button onClick={() => {
+                        const updates = { nombre: newProf.nombre || prof.nombre, especialidad: newProf.especialidad || prof.especialidad, valorHora: Number(newProf.valorHora) || prof.valorHora };
+                        onEditProfessor(prof.id, updates);
+                        setEditingId(null);
+                        setNewProf(INITIAL_PROFESSOR);
+                      }} className="px-3 py-2 bg-accent text-accent-foreground rounded-md">Guardar</button>
+                      <button onClick={() => { setEditingId(null); setNewProf(INITIAL_PROFESSOR); }} className="px-3 py-2 bg-muted text-foreground rounded-md">Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{prof.nombre}</p>
+                      <p className="text-xs text-muted-foreground">{prof.especialidad}</p>
+                      <p className="text-xs text-accent font-medium mt-1">${prof.valorHora.toLocaleString('es-CL')}/hora</p>
+                    </div>
+                    <div className="flex gap-1 ml-2">
+                      <button
+                        onClick={() => { setEditingId(prof.id); setNewProf({ nombre: prof.nombre, especialidad: prof.especialidad, valorHora: prof.valorHora }); }}
+                        className="p-2 hover:bg-accent/20 text-accent rounded-md transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteProfessor(prof.id)}
+                        className="p-2 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

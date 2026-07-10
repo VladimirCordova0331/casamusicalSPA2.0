@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Sun, Moon, Music, Users, Wallet, BarChart3,
-  FileText, Package, Star, Menu, X,
+  FileText, Package, Star, Menu, X, BookOpen,
 } from 'lucide-react';
 import { Dashboard } from './components/modules/dashboard/Dashboard';
 import { StudentModule } from './components/modules/students/StudentModule';
@@ -20,6 +20,7 @@ import { getDashboardMetrics } from './utils/calculations';
 const TABS = [
   { id: 'dashboard', label: 'Dashboard', Icon: BarChart3 },
   { id: 'alumnos', label: 'Alumnos', Icon: Users },
+  { id: 'profesores', label: 'Profesores', Icon: BookOpen },
   { id: 'finanzas', label: 'Finanzas', Icon: Wallet },
   { id: 'inventario', label: 'Inventario', Icon: Package },
   { id: 'crecimiento', label: 'Crecimiento', Icon: Star },
@@ -115,6 +116,11 @@ export default function App() {
     showToast(`✓ Alumno eliminado`);
   };
 
+  const handleEditAlumno = (id: number, updates: Partial<Alumno>) => {
+    setAlumnos(alumnos.map(a => a.id === id ? { ...a, ...updates } : a));
+    showToast('✓ Alumno actualizado');
+  };
+
   const handleAddGasto = (gasto: Omit<Gasto, 'id'>) => {
     const id = Math.max(...gastos.map(g => g.id), 0) + 1;
     setGastos([...gastos, { ...gasto, id }]);
@@ -130,6 +136,11 @@ export default function App() {
     const id = Math.max(...profesores.map(p => p.id), 0) + 1;
     setProfesores([...profesores, { ...prof, id }]);
     showToast(`✓ Profesor ${prof.nombre} agregado`);
+  };
+
+  const handleEditProfessor = (id: number, updates: Partial<Profesor>) => {
+    setProfesores(profesores.map(p => p.id === id ? { ...p, ...updates } : p));
+    showToast('✓ Profesor actualizado');
   };
 
   const handleDeleteProfessor = (id: number) => {
@@ -154,10 +165,12 @@ export default function App() {
       <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-3 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <Music className="w-4 h-4 text-accent-foreground" />
-            </div>
-            <h1 className="font-bold hidden sm:inline">Casa Musical SPA</h1>
+            <img 
+              src="/assets/casa-musical-logo.png" 
+              alt="Casa Musical Academia" 
+              className="w-10 h-10 object-contain"
+            />
+            <h1 className="font-bold hidden sm:inline text-lg">Casa Musical Academia</h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -231,7 +244,7 @@ export default function App() {
             students={alumnos}
             professors={profesores.map(p => p.nombre)}
             onAdd={handleAddAlumno}
-            onEdit={() => {}}
+          onEdit={handleEditAlumno}
             onDelete={handleDeleteAlumno}
           />
         )}
@@ -248,7 +261,7 @@ export default function App() {
           <TeacherModule
             professors={profesores}
             onAddProfessor={handleAddProfessor}
-            onEditProfessor={() => {}}
+            onEditProfessor={handleEditProfessor}
             onDeleteProfessor={handleDeleteProfessor}
           />
         )}

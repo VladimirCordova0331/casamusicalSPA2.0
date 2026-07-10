@@ -214,26 +214,53 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete }:
             <p className="text-xs text-muted-foreground text-center py-4">No hay alumnos que coincidan</p>
           ) : (
             filteredStudents.map(student => (
-              <div key={student.id} className="flex items-center justify-between bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{student.nombre}</p>
-                  <p className="text-xs text-muted-foreground">{student.instrumento} • {student.profesor}</p>
-                  <p className="text-xs text-green-500 font-medium mt-1">${student.aporte.toLocaleString('es-CL')}</p>
-                </div>
-                <div className="flex gap-1 ml-2">
-                  <button
-                    onClick={() => setEditingId(student.id)}
-                    className="p-2 hover:bg-accent/20 text-accent rounded-md transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(student.id)}
-                    className="p-2 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+              <div key={student.id} className="bg-muted/40 p-3 rounded-lg hover:bg-muted/60 transition-colors">
+                {editingId === student.id ? (
+                  <div className="space-y-2">
+                    <FormInput value={student.nombre} onChange={(e) => setNewStudent(prev => ({...prev, nombre: e.target.value}))} label="Nombre" />
+                    <FormInput value={student.apoderado} onChange={(e) => setNewStudent(prev => ({...prev, apoderado: e.target.value}))} label="Apoderado" />
+                    <FormInput value={student.instrumento} onChange={(e) => setNewStudent(prev => ({...prev, instrumento: e.target.value}))} label="Instrumento" />
+                    <FormSelect label="Profesor" value={student.profesor} onChange={(e)=> setNewStudent(prev => ({...prev, profesor: e.target.value}))} options={professors.map(p => ({value: p, label: p}))} />
+                    <FormInput type="number" value={student.aporte} onChange={(e) => setNewStudent(prev => ({...prev, aporte: Number(e.target.value)}))} label="Aporte" />
+                    <div className="flex gap-2">
+                      <button onClick={() => {
+                        const updates = {
+                          nombre: (newStudent.nombre || student.nombre),
+                          apoderado: (newStudent.apoderado || student.apoderado),
+                          instrumento: (newStudent.instrumento || student.instrumento),
+                          profesor: (newStudent.profesor || student.profesor),
+                          aporte: newStudent.aporte === 0 ? (newStudent.aporteCustom || student.aporte) : newStudent.aporte || student.aporte,
+                        };
+                        onEdit(student.id, updates);
+                        setEditingId(null);
+                        setNewStudent(INITIAL_STUDENT);
+                      }} className="px-3 py-2 bg-accent text-accent-foreground rounded-md">Guardar</button>
+                      <button onClick={() => { setEditingId(null); setNewStudent(INITIAL_STUDENT); }} className="px-3 py-2 bg-muted text-foreground rounded-md">Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{student.nombre}</p>
+                      <p className="text-xs text-muted-foreground">{student.instrumento} • {student.profesor}</p>
+                      <p className="text-xs text-green-500 font-medium mt-1">${student.aporte.toLocaleString('es-CL')}</p>
+                    </div>
+                    <div className="flex gap-1 ml-2">
+                      <button
+                        onClick={() => { setEditingId(student.id); setNewStudent({ nombre: student.nombre, apoderado: student.apoderado, instrumento: student.instrumento, profesor: student.profesor, aporte: student.aporte, aporteCustom: 0 }); }}
+                        className="p-2 hover:bg-accent/20 text-accent rounded-md transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(student.id)}
+                        className="p-2 hover:bg-red-500/20 text-red-500 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
