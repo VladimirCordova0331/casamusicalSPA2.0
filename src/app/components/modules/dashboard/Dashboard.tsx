@@ -1,12 +1,11 @@
 import React from 'react';
 import {
-  BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, LineChart, Line,
-  PieChart, Pie, Cell,
+  BarChart as ReBarChart, Bar, XAxis, YAxis,
+  ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import {
-  TrendingUp, TrendingDown, AlertCircle, CheckCircle,
-  Users, DollarSign, PieChart as PieChartIcon,
+  TrendingUp, TrendingDown, AlertCircle,
+  Users, DollarSign,
 } from 'lucide-react';
 import { DashboardMetrics, SmartAlert } from '../../../utils/types';
 import { BUSINESS_CONFIG } from '../../../config/business';
@@ -97,6 +96,8 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
   const utilityPercentage = metrics.ingresosMensuales > 0
     ? ((metrics.utilidad / metrics.ingresosMensuales) * 100).toFixed(1)
     : '0';
+
+  const [hoveredBar, setHoveredBar] = React.useState<{ month: string; ingresos: number; gastos: number } | null>(null);
 
   return (
     <div className="space-y-4">
@@ -211,18 +212,48 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
         <div className="bg-card border border-border rounded-xl p-4">
           <h4 className="text-sm font-semibold mb-3 text-foreground">Flujo Mensual</h4>
           <ResponsiveContainer width="100%" height={200}>
-            <ReBarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip 
-                contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
-                formatter={(value: any) => `$${(value / 1000).toFixed(0)}K`}
-              />
-              <Bar dataKey="ingresos" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            <ReBarChart
+              data={monthlyData}
+              onMouseMove={(state: any) => {
+                if (state?.activePayload?.length > 0) {
+                  setHoveredBar(state.activePayload[0].payload);
+                }
+              }}
+              onMouseLeave={() => setHoveredBar(null)}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`} />
+              <Bar dataKey="ingresos" fill="#3b82f6" radius={[4, 4, 0, 0]} cursor="default" background={{ fill: 'transparent' }} />
+              <Bar dataKey="gastos" fill="#ef4444" radius={[4, 4, 0, 0]} cursor="default" background={{ fill: 'transparent' }} />
             </ReBarChart>
           </ResponsiveContainer>
+          {/* Tooltip debajo del gráfico */}
+          <div className={`mt-2 rounded-lg px-3 py-2 border transition-all duration-150 ${hoveredBar ? 'opacity-100 border-border bg-muted/50' : 'opacity-0 border-transparent bg-transparent'}`} style={{ minHeight: '48px' }}>
+            {hoveredBar && (
+              <div className="flex items-center justify-between gap-4 text-xs">
+                <span className="font-semibold text-foreground">{hoveredBar.month}</span>
+                <div className="flex gap-4">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                    <span className="text-muted-foreground">Ingresos:</span>
+                    <span className="font-semibold text-blue-400">${hoveredBar.ingresos.toLocaleString('es-CL')}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                    <span className="text-muted-foreground">Gastos:</span>
+                    <span className="font-semibold text-red-400">${hoveredBar.gastos.toLocaleString('es-CL')}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-muted-foreground">Resultado:</span>
+                    <span className={`font-semibold ${hoveredBar.ingresos - hoveredBar.gastos >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ${(hoveredBar.ingresos - hoveredBar.gastos).toLocaleString('es-CL')}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Occupation Rate */}
