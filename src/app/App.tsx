@@ -59,9 +59,26 @@ export default function App() {
   const showToast = (msg: string) => { toast(msg); };
 
   // Confirmation modal state & helper
-  const [confirmState, setConfirmState] = useState<{ open: boolean; message: string; resolver?: (v:boolean)=>void }>({ open: false, message: '' });
-  const requestConfirm = (message: string) => new Promise<boolean>((resolve) => {
-    setConfirmState({ open: true, message, resolver: resolve });
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    message: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    confirmTone?: 'danger' | 'primary';
+    resolver?: (v:boolean)=>void;
+  }>({ open: false, message: '' });
+  const requestConfirm = (
+    message: string,
+    options?: { confirmLabel?: string; cancelLabel?: string; confirmTone?: 'danger' | 'primary' },
+  ) => new Promise<boolean>((resolve) => {
+    setConfirmState({
+      open: true,
+      message,
+      resolver: resolve,
+      confirmLabel: options?.confirmLabel,
+      cancelLabel: options?.cancelLabel,
+      confirmTone: options?.confirmTone,
+    });
   });
 
   useEffect(() => { save('cm_alumnos', alumnos); }, [alumnos]);
@@ -453,7 +470,10 @@ export default function App() {
 
   const handleGenerateSimulatedData = async (months: 6 | 12 | 24 | 36) => {
     const periodLabel = months === 6 ? '6 meses' : `${months / 12} año(s)`;
-    const ok = await requestConfirm(`Se crearán datos simulados de ${periodLabel} y se reemplazarán los actuales. ¿Continuar?`);
+    const ok = await requestConfirm(
+      `Se crearán datos simulados de ${periodLabel} y se reemplazarán los actuales. ¿Continuar?`,
+      { confirmLabel: 'Reemplazar con simulación', cancelLabel: 'Cancelar', confirmTone: 'primary' },
+    );
     if (!ok) return;
 
     const backupPayload = {
@@ -574,7 +594,10 @@ export default function App() {
   };
 
   const handleClearSimulatedData = async () => {
-    const ok = await requestConfirm('Se eliminarán los datos simulados. ¿Deseas restaurar el estado anterior?');
+    const ok = await requestConfirm(
+      'Se eliminarán los datos simulados. ¿Deseas restaurar el estado anterior?',
+      { confirmLabel: 'Restaurar datos reales', cancelLabel: 'Cancelar', confirmTone: 'primary' },
+    );
     if (!ok) return;
 
     const backup = load<{
@@ -904,13 +927,17 @@ export default function App() {
                 onClick={() => { confirmState.resolver?.(false); setConfirmState({ open: false, message: '' }); }}
                 className="px-4 py-2 text-sm rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all"
               >
-                Cancelar
+                {confirmState.cancelLabel || 'Cancelar'}
               </button>
               <button
                 onClick={() => { confirmState.resolver?.(true); setConfirmState({ open: false, message: '' }); }}
-                className="px-4 py-2 text-sm rounded-full bg-red-500/90 hover:bg-red-500 text-white transition-all shadow-sm"
+                className={`px-4 py-2 text-sm rounded-full text-white transition-all shadow-sm ${
+                  confirmState.confirmTone === 'primary'
+                    ? 'bg-accent hover:opacity-90'
+                    : 'bg-red-500/90 hover:bg-red-500'
+                }`}
               >
-                Eliminar
+                {confirmState.confirmLabel || 'Eliminar'}
               </button>
             </div>
           </div>
