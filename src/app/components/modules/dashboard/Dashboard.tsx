@@ -105,21 +105,21 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard
           label="Ingresos"
-          value={`$${metrics.ingresosMensuales.toLocaleString('es-CL')}`}
+          value={`$${metrics.ingresosMensuales.toLocaleString('es-CL')} CLP`}
           change={metrics.ingresosMensuales > 0 ? 'Base mensual de alumnos' : 'Sin alumnos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
         />
         <MetricCard
           label="Gastos"
-          value={`$${metrics.gastosMensuales.toLocaleString('es-CL')}`}
+          value={`$${metrics.gastosMensuales.toLocaleString('es-CL')} CLP`}
           change={metrics.gastosMensuales > 0 ? 'Total gastos registrados' : 'Sin gastos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
         />
         <MetricCard
           label="Utilidad"
-          value={`$${metrics.utilidad.toLocaleString('es-CL')}`}
+          value={`$${metrics.utilidad.toLocaleString('es-CL')} CLP`}
           change={`${utilityPercentage}% de margen`}
           icon={<TrendingUp className="w-4 h-4" />}
           trend={metrics.utilidad > 0 ? 'up' : 'down'}
