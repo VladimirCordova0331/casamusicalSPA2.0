@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, AlertCircle,
-  Users, DollarSign,
+  Users, DollarSign, BookOpen, Wallet, Package, FileText, Star,
 } from 'lucide-react';
 import { DashboardMetrics, SmartAlert } from '../../../utils/types';
 import { BUSINESS_CONFIG } from '../../../config/business';
@@ -110,15 +110,39 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavig
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-xl p-3">
-        <p className="text-xs text-muted-foreground mb-2">Accesos rápidos</p>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <button type="button" onClick={() => onNavigate?.('alumnos')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver alumnos</button>
-          <button type="button" onClick={() => onNavigate?.('profesores')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver profesores</button>
-          <button type="button" onClick={() => onNavigate?.('finanzas')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver finanzas</button>
-          <button type="button" onClick={() => onNavigate?.('inventario')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver inventario</button>
-          <button type="button" onClick={() => onNavigate?.('crecimiento')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver progreso</button>
-          <button type="button" onClick={() => onNavigate?.('documentos')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver documentos</button>
+      <div className="bg-card border border-border rounded-xl p-4">
+        <p className="text-xs text-muted-foreground mb-3">Atajos rápidos</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <button type="button" onClick={() => onNavigate?.('alumnos')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <Users className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Alumnos</p>
+            <p className="text-[11px] text-muted-foreground">{metrics.totalAlumnos} activos</p>
+          </button>
+          <button type="button" onClick={() => onNavigate?.('finanzas')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <Wallet className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Finanzas</p>
+            <p className="text-[11px] text-muted-foreground">Utilidad neta</p>
+          </button>
+          <button type="button" onClick={() => onNavigate?.('profesores')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <BookOpen className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Profesores</p>
+            <p className="text-[11px] text-muted-foreground">{metrics.totalProfesores} registrados</p>
+          </button>
+          <button type="button" onClick={() => onNavigate?.('inventario')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <Package className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Inventario</p>
+            <p className="text-[11px] text-muted-foreground">Ver estado</p>
+          </button>
+          <button type="button" onClick={() => onNavigate?.('documentos')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <FileText className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Documentos</p>
+            <p className="text-[11px] text-muted-foreground">Generar informes</p>
+          </button>
+          <button type="button" onClick={() => onNavigate?.('crecimiento')} className="min-h-[76px] rounded-xl border border-border bg-background/70 hover:bg-muted/70 p-3 text-left">
+            <Star className="w-4 h-4 text-accent mb-1.5" />
+            <p className="text-sm font-semibold text-foreground">Progreso</p>
+            <p className="text-[11px] text-muted-foreground">Evolución mensual</p>
+          </button>
         </div>
       </div>
 
@@ -127,7 +151,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavig
         <MetricCard
           label="Ingresos"
           value={`$${metrics.ingresosMensuales.toLocaleString('es-CL')} CLP`}
-          change={metrics.ingresosMensuales > 0 ? 'Base mensual de alumnos' : 'Sin alumnos registrados'}
+          change="Mensual"
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
           onClick={() => onNavigate?.('finanzas')}
@@ -135,7 +159,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavig
         <MetricCard
           label="Gastos"
           value={`$${metrics.gastosMensuales.toLocaleString('es-CL')} CLP`}
-          change={metrics.gastosMensuales > 0 ? 'Total gastos registrados' : 'Sin gastos registrados'}
+          change="Mensual"
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
           onClick={() => onNavigate?.('finanzas')}
@@ -143,7 +167,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavig
         <MetricCard
           label="Utilidad"
           value={`$${metrics.utilidad.toLocaleString('es-CL')} CLP`}
-          change={`${utilityPercentage}% de margen`}
+          change={`${utilityPercentage}% margen`}
           icon={<TrendingUp className="w-4 h-4" />}
           trend={metrics.utilidad > 0 ? 'up' : 'down'}
           onClick={() => onNavigate?.('finanzas')}
@@ -152,8 +176,8 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavig
           label="Alumnos"
           value={metrics.totalAlumnos.toString()}
           change={metrics.alumnosConPagoPendiente > 0
-            ? `${metrics.alumnosConPagoPendiente} con pago pendiente`
-            : 'Todos al día con pagos'}
+            ? `${metrics.alumnosConPagoPendiente} pendientes`
+            : 'Pagos al día'}
           icon={<Users className="w-4 h-4" />}
           trend={metrics.alumnosConPagoPendiente > 0 ? 'down' : 'up'}
           onClick={() => onNavigate?.('alumnos')}
