@@ -38,6 +38,7 @@ export default function App() {
 
   const [tab, setTab] = useState<typeof TABS[number]['id']>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [devMenuOpen, setDevMenuOpen] = useState(false);
   const [quickSearch, setQuickSearch] = useState('');
   const backupInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -284,6 +285,7 @@ export default function App() {
 
     return results.sort((a, b) => b.count - a.count).slice(0, 5);
   }, [alumnos, documentos, gastos, inventario, profesores, quickSearch]);
+  const activeTabMeta = TABS.find(t => t.id === tab) ?? TABS[0];
 
   const handleAddAlumno = (newAlumno: Omit<Alumno, 'id' | 'clases'>) => {
     const id = Math.max(...alumnos.map(a => a.id), 0) + 1;
@@ -449,6 +451,161 @@ export default function App() {
     event.target.value = '';
   };
 
+  const handleGenerateSimulatedData = async (years: 1 | 2 | 3) => {
+    const ok = await requestConfirm(`Se crearán datos simulados de ${years} año(s) y se reemplazarán los actuales. ¿Continuar?`);
+    if (!ok) return;
+
+    const backupPayload = {
+      alumnos,
+      profesores,
+      grupos,
+      gastos,
+      inventario,
+      documentos,
+    };
+    save('cm_simulation_backup', backupPayload);
+
+    const today = new Date();
+    const teachers: Profesor[] = [
+      { id: 1, nombre: 'Camila Rojas', especialidad: 'Piano', valorHora: 18000 },
+      { id: 2, nombre: 'Diego Soto', especialidad: 'Guitarra', valorHora: 17000 },
+      { id: 3, nombre: 'Valentina Núñez', especialidad: 'Canto', valorHora: 18500 },
+      { id: 4, nombre: 'Matías Pérez', especialidad: 'Batería', valorHora: 17500 },
+    ];
+    const instruments = ['Piano', 'Guitarra', 'Canto', 'Batería', 'Violín'];
+    const studentNames = [
+      'Sofía', 'Martín', 'Javiera', 'Benjamín', 'Isidora', 'Tomás', 'Antonia', 'Vicente',
+      'Florencia', 'Agustín', 'Emilia', 'Mateo', 'Trinidad', 'Lucas', 'Josefa', 'Maximiliano',
+      'Amanda', 'Ignacio', 'Catalina', 'Joaquín', 'Renata', 'Cristóbal', 'Dominga', 'Sebastián',
+    ];
+
+    const studentCount = Math.min(36, 12 + years * 6);
+    const students: Alumno[] = Array.from({ length: studentCount }, (_, index) => {
+      const id = index + 1;
+      const aporte = 42000 + (index % 6) * 5000;
+      const clases: Alumno['clases'] = [];
+
+      for (let monthOffset = years * 12 - 1; monthOffset >= 0; monthOffset--) {
+        const monthDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
+        const monthlyClasses = BUSINESS_CONFIG.monthlyBaseClasses + ((monthOffset + index) % 4 === 0 ? 1 : 0);
+        for (let classIdx = 0; classIdx < monthlyClasses; classIdx++) {
+          const day = Math.min(28, 3 + classIdx * 7 + (index % 3));
+          const classDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+          clases.push({
+            fecha: classDate.toISOString().slice(0, 10),
+            contenido: ['Técnica', 'Repertorio', 'Lectura musical', 'Ensamble'][classIdx % 4],
+          });
+        }
+      }
+
+      return {
+        id,
+        nombre: `${studentNames[index % studentNames.length]} ${String.fromCharCode(65 + (index % 26))}.`,
+        apoderado: `Apoderado ${id}`,
+        instrumento: instruments[index % instruments.length],
+        profesor: teachers[index % teachers.length].nombre,
+        aporte,
+        modalidad: index % 2 === 0 ? 'Presencial' : 'Online',
+        grupoFamiliar: index % 5 === 0,
+        clases,
+        pagado: index % 4 !== 0,
+      };
+    });
+
+    const familyGroups: GrupoFamiliar[] = [];
+    for (let i = 0; i < students.length; i += 2) {
+      if (!students[i + 1]) break;
+      familyGroups.push({
+        id: familyGroups.length + 1,
+        nombre: `Familia ${familyGroups.length + 1}`,
+        miembros: [students[i].id, students[i + 1].id],
+        descuento: 10,
+      });
+    }
+
+    const expenseCategories = ['Arriendo', 'Servicios', 'Marketing', 'Mantención'];
+    const expenses: Gasto[] = [];
+    for (let monthOffset = years * 12 - 1; monthOffset >= 0; monthOffset--) {
+      const monthDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
+      for (let c = 0; c < expenseCategories.length; c++) {
+        const amountBase = [280000, 120000, 65000, 45000][c];
+        const variability = ((monthOffset + c) % 5) * 9000;
+        const day = 5 + c * 6;
+        const expenseDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+        expenses.push({
+          id: expenses.length + 1,
+          concepto: `${expenseCategories[c]} ${monthDate.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })}`,
+          categoria: expenseCategories[c],
+          monto: amountBase + variability,
+          fecha: expenseDate.toISOString().slice(0, 10),
+          automatico: c < 2,
+        });
+      }
+    }
+
+    const inventory: InventarioItem[] = [
+      { id: 1, nombre: 'Piano digital Yamaha', categoria: 'Instrumento', cantidad: 2, estado: 'bueno', ubicacion: 'Sala 1' },
+      { id: 2, nombre: 'Guitarra clásica', categoria: 'Instrumento', cantidad: 5, estado: 'bueno', ubicacion: 'Bodega' },
+      { id: 3, nombre: 'Atriles', categoria: 'Accesorio', cantidad: 12, estado: 'regular', ubicacion: 'Sala 2' },
+      { id: 4, nombre: 'Micrófonos', categoria: 'Audio', cantidad: 4, estado: 'bueno', ubicacion: 'Sala 3' },
+      { id: 5, nombre: 'Batería acústica', categoria: 'Instrumento', cantidad: 1, estado: 'regular', ubicacion: 'Sala 4' },
+    ];
+
+    const docs: Documento[] = Array.from({ length: years * 6 }, (_, i) => {
+      const date = new Date(today.getFullYear(), today.getMonth() - i * 2, 12);
+      return {
+        id: i + 1,
+        nombre: `Informe académico ${date.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}`,
+        tipo: i % 2 === 0 ? 'reporte' : 'recibo',
+        fecha: date.toISOString().slice(0, 10),
+        descripcion: 'Documento generado para pruebas visuales y de flujo.',
+      };
+    });
+
+    setAlumnos(students);
+    setProfesores(teachers);
+    setGrupos(familyGroups);
+    setGastos(expenses);
+    setInventario(inventory);
+    setDocumentos(docs);
+    save('cm_simulation_active', true);
+    showToast(`✓ Datos simulados cargados (${years} año/s)`);
+  };
+
+  const handleClearSimulatedData = async () => {
+    const ok = await requestConfirm('Se eliminarán los datos simulados. ¿Deseas restaurar el estado anterior?');
+    if (!ok) return;
+
+    const backup = load<{
+      alumnos: Alumno[];
+      profesores: Profesor[];
+      grupos: GrupoFamiliar[];
+      gastos: Gasto[];
+      inventario: InventarioItem[];
+      documentos: Documento[];
+    } | null>('cm_simulation_backup', null);
+
+    if (backup) {
+      setAlumnos(backup.alumnos || []);
+      setProfesores(backup.profesores || []);
+      setGrupos(backup.grupos || []);
+      setGastos(backup.gastos || []);
+      setInventario(backup.inventario || []);
+      setDocumentos(backup.documentos || []);
+    } else {
+      setAlumnos([]);
+      setProfesores([]);
+      setGrupos([]);
+      setGastos([]);
+      setInventario([]);
+      setDocumentos([]);
+    }
+
+    save('cm_simulation_backup', null);
+    save('cm_simulation_active', false);
+    showToast('✓ Datos simulados eliminados');
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
 
@@ -520,6 +677,18 @@ export default function App() {
               <span className="hidden lg:inline text-[11px]">Restaurar</span>
             </button>
 
+            <button
+              onClick={() => setDevMenuOpen(!devMenuOpen)}
+              title="Opciones de desarrollador"
+              className={`h-8 px-2 md:px-2.5 flex items-center justify-center gap-1 rounded-full transition-all ${
+                devMenuOpen
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]'
+              }`}
+            >
+              <span className="text-[11px] font-semibold">Dev</span>
+            </button>
+
             {/* Toggle modo oscuro — estilo Copilot */}
             <button
               onClick={() => setDark(!dark)}
@@ -531,10 +700,15 @@ export default function App() {
                 : <Moon className="w-[15px] h-[15px]" />}
             </button>
 
-            {/* Menú móvil */}
+            {/* Menú principal tipo hamburguesa */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+              title={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                mobileMenuOpen
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]'
+              }`}
             >
               {mobileMenuOpen
                 ? <X    className="w-[15px] h-[15px]" />
@@ -550,10 +724,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* Menú móvil desplegable */}
+        {/* Menú principal desplegable */}
         {mobileMenuOpen && (
-          <nav className="border-t border-border px-4 py-2 bg-card/70 overflow-x-auto">
-            <div className="flex gap-1">
+          <nav className="border-t border-border px-4 py-2 bg-card/70">
+            <div className="max-w-7xl mx-auto flex flex-wrap gap-1.5">
               {TABS.map(({ id, label, Icon }) => (
                 <button
                   key={id}
@@ -571,27 +745,47 @@ export default function App() {
             </div>
           </nav>
         )}
+
+        {devMenuOpen && (
+          <nav className="border-t border-border px-4 py-2 bg-card/60">
+            <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => { void handleGenerateSimulatedData(1); setDevMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
+              >
+                Simular 1 año
+              </button>
+              <button
+                onClick={() => { void handleGenerateSimulatedData(2); setDevMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
+              >
+                Simular 2 años
+              </button>
+              <button
+                onClick={() => { void handleGenerateSimulatedData(3); setDevMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
+              >
+                Simular 3 años
+              </button>
+              <button
+                onClick={() => { void handleClearSimulatedData(); setDevMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full border border-red-400/60 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                Borrar simulación
+              </button>
+            </div>
+          </nav>
+        )}
       </header>
 
-      {/* ── Navegación desktop — tabs tipo píldora ────────── */}
-      <nav className="hidden sm:block border-b border-border bg-card/60 backdrop-blur-sm sticky top-[52px] z-30 overflow-x-auto">
-        <div className="flex gap-0.5 px-4 py-2 max-w-7xl mx-auto">
-          {TABS.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-full transition-all ${
-                tab === id
-                  ? 'bg-accent text-accent-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-              }`}
-            >
-              <Icon className="w-3 h-3" />
-              {label}
-            </button>
-          ))}
+      <div className="border-b border-border bg-card/40 backdrop-blur-sm px-4 py-1.5">
+        <div className="max-w-7xl mx-auto">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-muted/70 text-foreground">
+            <activeTabMeta.Icon className="w-3 h-3" />
+            {activeTabMeta.label}
+          </span>
         </div>
-      </nav>
+      </div>
 
       {/* ── Contenido principal ──────────────────────────── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-5 pb-16 fade-in-up-soft">
