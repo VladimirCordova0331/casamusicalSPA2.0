@@ -451,8 +451,9 @@ export default function App() {
     event.target.value = '';
   };
 
-  const handleGenerateSimulatedData = async (years: 1 | 2 | 3) => {
-    const ok = await requestConfirm(`Se crearán datos simulados de ${years} año(s) y se reemplazarán los actuales. ¿Continuar?`);
+  const handleGenerateSimulatedData = async (months: 6 | 12 | 24 | 36) => {
+    const periodLabel = months === 6 ? '6 meses' : `${months / 12} año(s)`;
+    const ok = await requestConfirm(`Se crearán datos simulados de ${periodLabel} y se reemplazarán los actuales. ¿Continuar?`);
     if (!ok) return;
 
     const backupPayload = {
@@ -479,13 +480,13 @@ export default function App() {
       'Amanda', 'Ignacio', 'Catalina', 'Joaquín', 'Renata', 'Cristóbal', 'Dominga', 'Sebastián',
     ];
 
-    const studentCount = Math.min(36, 12 + years * 6);
+    const studentCount = Math.min(36, 12 + Math.round(months / 2));
     const students: Alumno[] = Array.from({ length: studentCount }, (_, index) => {
       const id = index + 1;
       const aporte = 42000 + (index % 6) * 5000;
       const clases: Alumno['clases'] = [];
 
-      for (let monthOffset = years * 12 - 1; monthOffset >= 0; monthOffset--) {
+      for (let monthOffset = months - 1; monthOffset >= 0; monthOffset--) {
         const monthDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
         const monthlyClasses = BUSINESS_CONFIG.monthlyBaseClasses + ((monthOffset + index) % 4 === 0 ? 1 : 0);
         for (let classIdx = 0; classIdx < monthlyClasses; classIdx++) {
@@ -525,7 +526,7 @@ export default function App() {
 
     const expenseCategories = ['Arriendo', 'Servicios', 'Marketing', 'Mantención'];
     const expenses: Gasto[] = [];
-    for (let monthOffset = years * 12 - 1; monthOffset >= 0; monthOffset--) {
+    for (let monthOffset = months - 1; monthOffset >= 0; monthOffset--) {
       const monthDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
       for (let c = 0; c < expenseCategories.length; c++) {
         const amountBase = [280000, 120000, 65000, 45000][c];
@@ -551,7 +552,7 @@ export default function App() {
       { id: 5, nombre: 'Batería acústica', categoria: 'Instrumento', cantidad: 1, estado: 'regular', ubicacion: 'Sala 4' },
     ];
 
-    const docs: Documento[] = Array.from({ length: years * 6 }, (_, i) => {
+    const docs: Documento[] = Array.from({ length: Math.max(3, Math.round(months / 2)) }, (_, i) => {
       const date = new Date(today.getFullYear(), today.getMonth() - i * 2, 12);
       return {
         id: i + 1,
@@ -569,7 +570,7 @@ export default function App() {
     setInventario(inventory);
     setDocumentos(docs);
     save('cm_simulation_active', true);
-    showToast(`✓ Datos simulados cargados (${years} año/s)`);
+    showToast(`✓ Datos simulados cargados (${periodLabel})`);
   };
 
   const handleClearSimulatedData = async () => {
@@ -750,19 +751,25 @@ export default function App() {
           <nav className="border-t border-border px-4 py-2 bg-card/60">
             <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
               <button
-                onClick={() => { void handleGenerateSimulatedData(1); setDevMenuOpen(false); }}
+                onClick={() => { void handleGenerateSimulatedData(6); setDevMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
+              >
+                Simular 6 meses
+              </button>
+              <button
+                onClick={() => { void handleGenerateSimulatedData(12); setDevMenuOpen(false); }}
                 className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
               >
                 Simular 1 año
               </button>
               <button
-                onClick={() => { void handleGenerateSimulatedData(2); setDevMenuOpen(false); }}
+                onClick={() => { void handleGenerateSimulatedData(24); setDevMenuOpen(false); }}
                 className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
               >
                 Simular 2 años
               </button>
               <button
-                onClick={() => { void handleGenerateSimulatedData(3); setDevMenuOpen(false); }}
+                onClick={() => { void handleGenerateSimulatedData(36); setDevMenuOpen(false); }}
                 className="px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-background/70 hover:bg-muted/70 transition-colors"
               >
                 Simular 3 años
