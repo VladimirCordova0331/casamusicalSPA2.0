@@ -50,7 +50,7 @@ export function GrowthModule({ data = [], capacidadMaxima = 50 }: GrowthModulePr
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Ingresos</p>
-          <p className="text-2xl font-bold text-green-500">${(latestMonth.ingresos / 1000).toFixed(0)}K</p>
+          <p className="text-2xl font-bold text-green-500">${latestMonth.ingresos.toLocaleString('es-CL')}</p>
           <p className="text-xs text-green-500 mt-1">+{ingresosGrowth}% mes anterior</p>
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
@@ -137,7 +137,7 @@ export function GrowthModule({ data = [], capacidadMaxima = 50 }: GrowthModulePr
           <div>
             <p className="text-xs text-muted-foreground mb-1 mt-3">Proyección de Ingresos</p>
             <p className="text-lg font-bold text-green-500">
-              ${(latestMonth.ingresos * 1.15 / 1000).toFixed(0)}K
+              ${Math.round(latestMonth.ingresos * 1.15).toLocaleString('es-CL')}
             </p>
             <p className="text-xs text-green-500">+15% estimado</p>
           </div>

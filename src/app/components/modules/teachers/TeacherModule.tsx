@@ -87,12 +87,12 @@ export function TeacherModule({
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Valor Promedio/Hora</p>
-          <p className="text-2xl font-bold text-accent">${(promedio / 1000).toFixed(0)}K</p>
+          <p className="text-2xl font-bold text-accent">${Math.round(promedio).toLocaleString('es-CL')}</p>
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Total Inversión/Hora</p>
           <p className="text-2xl font-bold text-orange-500">
-            ${(professors.reduce((sum, p) => sum + p.valorHora, 0) / 1000).toFixed(0)}K
+            ${professors.reduce((sum, p) => sum + p.valorHora, 0).toLocaleString('es-CL')}
           </p>
         </div>
       </div>

@@ -334,7 +334,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete, r
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Ingresos</p>
           <p className="text-2xl font-bold text-green-500">
-            ${(students.reduce((s, a) => s + a.aporte, 0) / 1000).toFixed(0)}K
+            ${students.reduce((s, a) => s + a.aporte, 0).toLocaleString('es-CL')}
           </p>
         </div>
         <div className="bg-card border border-border rounded-lg p-3">

@@ -105,21 +105,21 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard
           label="Ingresos"
-          value={`$${(metrics.ingresosMensuales / 1000).toFixed(0)}K`}
+          value={`$${metrics.ingresosMensuales.toLocaleString('es-CL')}`}
           change={metrics.ingresosMensuales > 0 ? 'Base mensual de alumnos' : 'Sin alumnos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
         />
         <MetricCard
           label="Gastos"
-          value={`$${(metrics.gastosMensuales / 1000).toFixed(0)}K`}
+          value={`$${metrics.gastosMensuales.toLocaleString('es-CL')}`}
           change={metrics.gastosMensuales > 0 ? 'Total gastos registrados' : 'Sin gastos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
         />
         <MetricCard
           label="Utilidad"
-          value={`$${(metrics.utilidad / 1000).toFixed(0)}K`}
+          value={`$${metrics.utilidad.toLocaleString('es-CL')}`}
           change={`${utilityPercentage}% de margen`}
           icon={<TrendingUp className="w-4 h-4" />}
           trend={metrics.utilidad > 0 ? 'up' : 'down'}
@@ -223,7 +223,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}K`} />
+              <YAxis tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${Number(v).toLocaleString('es-CL')}`} />
               <Bar dataKey="ingresos" fill="#3b82f6" radius={[4, 4, 0, 0]} cursor="default" background={{ fill: 'transparent' }} />
               <Bar dataKey="gastos" fill="#ef4444" radius={[4, 4, 0, 0]} cursor="default" background={{ fill: 'transparent' }} />
             </ReBarChart>
@@ -277,7 +277,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
         <div className="bg-card border border-border rounded-xl p-3">
           <p className="text-xs text-muted-foreground mb-1">Flujo de Caja</p>
           <p className={`text-xl font-bold ${metrics.flujoCaja > 0 ? 'text-green-500' : 'text-red-500'}`}>
-            ${(metrics.flujoCaja / 1000).toFixed(0)}K
+            ${metrics.flujoCaja.toLocaleString('es-CL')}
           </p>
         </div>
         <div className="bg-card border border-border rounded-xl p-3">
