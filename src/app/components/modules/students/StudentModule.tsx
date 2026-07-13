@@ -41,7 +41,7 @@ const APORTE_OPTIONS = [
   { value: 0, label: 'Otro monto' },
 ];
 
-const COMMON_INSTRUMENTS = ['Piano', 'Guitarra', 'Canto', 'Violín', 'Batería', 'Ukelele'];
+const COMMON_INSTRUMENTS = ['Iniciación temprana', 'Piano', 'Flauta', 'Ukelele'];
 const CLASS_NOTE_SUGGESTIONS = [
   'Técnica de respiración y apoyo',
   'Escalas y coordinación rítmica',
@@ -363,7 +363,7 @@ export function StudentModule({ students, professors, onAdd, onEdit, onDelete, r
             label="Apoderado"
           />
           <FormInput
-            placeholder="Ej: Guitarra, Piano, etc"
+            placeholder="Ej: Iniciación temprana, Piano, Flauta, Ukelele"
             value={newStudent.instrumento}
             onChange={(e) => updateField('instrumento', e.target.value)}
             label="Instrumento"

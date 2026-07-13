@@ -18,7 +18,7 @@ const INITIAL_PROFESSOR = {
   valorHora: 15000,
 };
 
-const SPECIALTY_PRESETS = ['Piano', 'Guitarra', 'Canto', 'Violín', 'Batería', 'Ukelele'];
+const SPECIALTY_PRESETS = ['Iniciación temprana', 'Piano', 'Flauta', 'Ukelele'];
 const RATE_PRESETS = [12000, 15000, 18000, 22000];
 
 export function TeacherModule({
@@ -111,7 +111,7 @@ export function TeacherModule({
             label="Nombre"
           />
           <FormInput
-            placeholder="Ej: Guitarra, Piano, Violín, etc"
+            placeholder="Ej: Iniciación temprana, Piano, Flauta, Ukelele"
             value={newProf.especialidad}
             onChange={(e) => setNewProf({ ...newProf, especialidad: e.target.value })}
             label="Especialidad"

@@ -469,11 +469,11 @@ export default function App() {
     const today = new Date();
     const teachers: Profesor[] = [
       { id: 1, nombre: 'Camila Rojas', especialidad: 'Piano', valorHora: 18000 },
-      { id: 2, nombre: 'Diego Soto', especialidad: 'Guitarra', valorHora: 17000 },
-      { id: 3, nombre: 'Valentina Núñez', especialidad: 'Canto', valorHora: 18500 },
-      { id: 4, nombre: 'Matías Pérez', especialidad: 'Batería', valorHora: 17500 },
+      { id: 2, nombre: 'Diego Soto', especialidad: 'Flauta', valorHora: 17000 },
+      { id: 3, nombre: 'Valentina Núñez', especialidad: 'Ukelele', valorHora: 18500 },
+      { id: 4, nombre: 'Matías Pérez', especialidad: 'Iniciación temprana', valorHora: 17500 },
     ];
-    const instruments = ['Piano', 'Guitarra', 'Canto', 'Batería', 'Violín'];
+    const instruments = ['Iniciación temprana', 'Piano', 'Flauta', 'Ukelele'];
     const studentNames = [
       'Sofía', 'Martín', 'Javiera', 'Benjamín', 'Isidora', 'Tomás', 'Antonia', 'Vicente',
       'Florencia', 'Agustín', 'Emilia', 'Mateo', 'Trinidad', 'Lucas', 'Josefa', 'Maximiliano',
@@ -546,10 +546,10 @@ export default function App() {
 
     const inventory: InventarioItem[] = [
       { id: 1, nombre: 'Piano digital Yamaha', categoria: 'Instrumento', cantidad: 2, estado: 'bueno', ubicacion: 'Sala 1' },
-      { id: 2, nombre: 'Guitarra clásica', categoria: 'Instrumento', cantidad: 5, estado: 'bueno', ubicacion: 'Bodega' },
+      { id: 2, nombre: 'Flautas dulces', categoria: 'Instrumento', cantidad: 8, estado: 'bueno', ubicacion: 'Bodega' },
       { id: 3, nombre: 'Atriles', categoria: 'Accesorio', cantidad: 12, estado: 'regular', ubicacion: 'Sala 2' },
       { id: 4, nombre: 'Micrófonos', categoria: 'Audio', cantidad: 4, estado: 'bueno', ubicacion: 'Sala 3' },
-      { id: 5, nombre: 'Batería acústica', categoria: 'Instrumento', cantidad: 1, estado: 'regular', ubicacion: 'Sala 4' },
+      { id: 5, nombre: 'Ukeleles', categoria: 'Instrumento', cantidad: 6, estado: 'regular', ubicacion: 'Sala 4' },
     ];
 
     const docs: Documento[] = Array.from({ length: Math.max(3, Math.round(months / 2)) }, (_, i) => {
