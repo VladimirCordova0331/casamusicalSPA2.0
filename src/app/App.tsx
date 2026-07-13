@@ -503,7 +503,7 @@ export default function App() {
     const studentCount = Math.min(36, 12 + Math.round(months / 2));
     const students: Alumno[] = Array.from({ length: studentCount }, (_, index) => {
       const id = index + 1;
-      const aporte = 42000 + (index % 6) * 5000;
+      const aporte = 65000 + (index % 6) * 7000;
       const clases: Alumno['clases'] = [];
 
       for (let monthOffset = months - 1; monthOffset >= 0; monthOffset--) {
@@ -549,8 +549,8 @@ export default function App() {
     for (let monthOffset = months - 1; monthOffset >= 0; monthOffset--) {
       const monthDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
       for (let c = 0; c < expenseCategories.length; c++) {
-        const amountBase = [280000, 120000, 65000, 45000][c];
-        const variability = ((monthOffset + c) % 5) * 9000;
+        const amountBase = [180000, 90000, 45000, 30000][c];
+        const variability = ((monthOffset + c) % 5) * 5000;
         const day = 5 + c * 6;
         const expenseDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
         expenses.push({

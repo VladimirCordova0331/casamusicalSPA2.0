@@ -236,12 +236,12 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Total Gastos</p>
-          <p className="text-2xl font-bold text-red-500">${(totalGastos / 1000).toFixed(0)}K</p>
+          <p className="text-2xl font-bold text-red-500">${totalGastos.toLocaleString('es-CL')}</p>
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">Promedio</p>
           <p className="text-2xl font-bold text-accent">
-            ${gastos.length > 0 ? ((totalGastos / gastos.length) / 1000).toFixed(0) : 0}K
+            ${gastos.length > 0 ? Math.round(totalGastos / gastos.length).toLocaleString('es-CL') : 0}
           </p>
         </div>
         <div className="bg-card border border-border rounded-lg p-3">
@@ -368,7 +368,7 @@ export function FinanceModule({ gastos, onAddGasto, onDeleteGasto, requestConfir
             cat.total > 0 && (
               <div key={cat.value} className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{cat.label}</span>
-                <span className="text-xs font-semibold text-foreground">${(cat.total / 1000).toFixed(0)}K</span>
+                <span className="text-xs font-semibold text-foreground">${cat.total.toLocaleString('es-CL')}</span>
               </div>
             )
           ))}
