@@ -14,6 +14,7 @@ interface DashboardProps {
   metrics: DashboardMetrics;
   alerts: SmartAlert[];
   monthlyData: Array<{ month: string; ingresos: number; gastos: number }>;
+  onNavigate?: (tab: 'alumnos' | 'profesores' | 'finanzas' | 'inventario' | 'crecimiento' | 'documentos') => void;
   agendaFinance: {
     monthLabel: string;
     weeksInCalendar: number;
@@ -39,7 +40,8 @@ const MetricCard = ({
   change, 
   icon: Icon, 
   trend = 'up',
-  color = 'accent'
+  color = 'accent',
+  onClick,
 }: {
   label: string;
   value: string;
@@ -47,8 +49,15 @@ const MetricCard = ({
   icon: React.ReactNode;
   trend?: 'up' | 'down' | 'neutral';
   color?: string;
+  onClick?: () => void;
 }) => (
-  <div className="bg-card border border-border rounded-xl p-4 hover:border-accent/50 transition-colors">
+  <button
+    type="button"
+    onClick={onClick}
+    className={`bg-card border border-border rounded-xl p-4 text-left w-full transition-colors ${
+      onClick ? 'hover:border-accent/50 cursor-pointer' : ''
+    }`}
+  >
     <div className="flex items-center justify-between mb-2">
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
         {label}
@@ -67,7 +76,7 @@ const MetricCard = ({
         </div>
       )}
     </div>
-  </div>
+  </button>
 );
 
 const AlertCard = ({ alert }: { alert: SmartAlert }) => {
@@ -92,7 +101,7 @@ const AlertCard = ({ alert }: { alert: SmartAlert }) => {
   );
 };
 
-export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: DashboardProps) {
+export function Dashboard({ metrics, alerts, monthlyData, agendaFinance, onNavigate }: DashboardProps) {
   const utilityPercentage = metrics.ingresosMensuales > 0
     ? ((metrics.utilidad / metrics.ingresosMensuales) * 100).toFixed(1)
     : '0';
@@ -101,6 +110,18 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
 
   return (
     <div className="space-y-4">
+      <div className="bg-card border border-border rounded-xl p-3">
+        <p className="text-xs text-muted-foreground mb-2">Accesos rápidos</p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <button type="button" onClick={() => onNavigate?.('alumnos')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver alumnos</button>
+          <button type="button" onClick={() => onNavigate?.('profesores')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver profesores</button>
+          <button type="button" onClick={() => onNavigate?.('finanzas')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver finanzas</button>
+          <button type="button" onClick={() => onNavigate?.('inventario')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver inventario</button>
+          <button type="button" onClick={() => onNavigate?.('crecimiento')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver progreso</button>
+          <button type="button" onClick={() => onNavigate?.('documentos')} className="px-3 py-1.5 text-xs rounded-full border border-border bg-background/70 hover:bg-muted/70 whitespace-nowrap">Ver documentos</button>
+        </div>
+      </div>
+
       {/* Main KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard
@@ -109,6 +130,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
           change={metrics.ingresosMensuales > 0 ? 'Base mensual de alumnos' : 'Sin alumnos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
+          onClick={() => onNavigate?.('finanzas')}
         />
         <MetricCard
           label="Gastos"
@@ -116,6 +138,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
           change={metrics.gastosMensuales > 0 ? 'Total gastos registrados' : 'Sin gastos registrados'}
           icon={<DollarSign className="w-4 h-4" />}
           trend="neutral"
+          onClick={() => onNavigate?.('finanzas')}
         />
         <MetricCard
           label="Utilidad"
@@ -123,6 +146,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
           change={`${utilityPercentage}% de margen`}
           icon={<TrendingUp className="w-4 h-4" />}
           trend={metrics.utilidad > 0 ? 'up' : 'down'}
+          onClick={() => onNavigate?.('finanzas')}
         />
         <MetricCard
           label="Alumnos"
@@ -132,6 +156,7 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
             : 'Todos al día con pagos'}
           icon={<Users className="w-4 h-4" />}
           trend={metrics.alumnosConPagoPendiente > 0 ? 'down' : 'up'}
+          onClick={() => onNavigate?.('alumnos')}
         />
       </div>
 
@@ -153,7 +178,10 @@ export function Dashboard({ metrics, alerts, monthlyData, agendaFinance }: Dashb
       <div className="bg-card border border-border rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold">Agenda y Finanzas (base {BUSINESS_CONFIG.monthlyBaseClasses} clases)</h3>
-          <span className="text-xs text-muted-foreground capitalize">{agendaFinance.monthLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground capitalize">{agendaFinance.monthLabel}</span>
+            <button type="button" onClick={() => onNavigate?.('alumnos')} className="px-2 py-1 text-[11px] rounded-full border border-border bg-background/70 hover:bg-muted/70">Ir a alumnos</button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
