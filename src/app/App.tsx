@@ -21,12 +21,12 @@ import { toast } from 'sonner';
 import { BUSINESS_CONFIG } from './config/business';
 
 const TABS = [
-  { id: 'dashboard', label: 'Dashboard', Icon: BarChart3 },
+  { id: 'dashboard', label: 'Inicio', Icon: BarChart3 },
   { id: 'alumnos', label: 'Alumnos', Icon: Users },
   { id: 'profesores', label: 'Profesores', Icon: BookOpen },
   { id: 'finanzas', label: 'Finanzas', Icon: Wallet },
   { id: 'inventario', label: 'Inventario', Icon: Package },
-  { id: 'crecimiento', label: 'Crecimiento', Icon: Star },
+  { id: 'crecimiento', label: 'Progreso', Icon: Star },
   { id: 'documentos', label: 'Documentos', Icon: FileText },
 ] as const;
 
@@ -662,20 +662,20 @@ export default function App() {
 
             <button
               onClick={handleExportBackup}
-              title="Descargar respaldo completo (.json)"
-              className="h-8 px-2 md:px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+              title="Guardar copia (.json)"
+              className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
             >
               <Download className="w-[15px] h-[15px]" />
-              <span className="hidden lg:inline text-[11px]">Respaldo</span>
+              <span className="text-[11px]">Guardar</span>
             </button>
 
             <button
               onClick={() => backupInputRef.current?.click()}
-              title="Restaurar respaldo (.json)"
-              className="h-8 px-2 md:px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+              title="Cargar copia (.json)"
+              className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
             >
               <Upload className="w-[15px] h-[15px]" />
-              <span className="hidden lg:inline text-[11px]">Restaurar</span>
+              <span className="text-[11px]">Cargar</span>
             </button>
 
             <button
@@ -694,18 +694,19 @@ export default function App() {
             <button
               onClick={() => setDark(!dark)}
               title={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
+              className="h-8 px-2.5 flex items-center justify-center gap-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07] transition-all"
             >
               {dark
                 ? <Sun  className="w-[15px] h-[15px]" />
                 : <Moon className="w-[15px] h-[15px]" />}
+              <span className="hidden sm:inline text-[11px]">Tema</span>
             </button>
 
             {/* Menú principal tipo hamburguesa */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               title={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+              className={`h-8 px-2.5 flex items-center justify-center gap-1 rounded-full transition-all ${
                 mobileMenuOpen
                   ? 'bg-accent text-accent-foreground'
                   : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.07]'
@@ -714,6 +715,7 @@ export default function App() {
               {mobileMenuOpen
                 ? <X    className="w-[15px] h-[15px]" />
                 : <Menu className="w-[15px] h-[15px]" />}
+              <span className="text-[11px]">Menú</span>
             </button>
             <input
               ref={backupInputRef}
